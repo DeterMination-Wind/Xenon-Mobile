@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "variants": ["vanilla", "be", "mindustryx"],
+  "channels": ["stable", "be", "dev"],
+  "mirrors": [
+    {
+      "id": "121.199.60.4",
+      "baseUrl": "http://121.199.60.4/github",
+      "priority": 0
+    }
+  ],
+  "artifacts": []
+}
