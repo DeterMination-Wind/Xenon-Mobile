@@ -9,5 +9,26 @@
       "priority": 0
     }
   ],
-  "artifacts": []
+  "artifacts": [
+    {
+      "id": "xenon-mobile-debug-v2.4.6-apk",
+      "variant": "vanilla",
+      "channel": "dev",
+      "backend": "apk",
+      "slot": 1,
+      "versionName": "v2.4.6-debug",
+      "build": 246,
+      "buildType": "debug",
+      "javaVersion": 17,
+      "urls": [
+        "https://github.com/DeterMination-Wind/Xenon-Mobile/releases/download/v2.4.6-debug/xenon-mobile-debug-v2.4.6-arm64.apk"
+      ],
+      "sha256": "17a375d691d276b62af9b73670d03f84d3281b0393c5a5fb05ba3100d6cb9de5",
+      "size": 193538421,
+      "nativeProfile": "arm64-v8a",
+      "mgVersion": "android-apk",
+      "minLauncherVersion": 1,
+      "changelog": "Xenon Mobile Debug APK v2.4.6"
+    }
+  ]
 }
