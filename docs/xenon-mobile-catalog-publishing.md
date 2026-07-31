@@ -63,7 +63,7 @@ Runtime server lists intentionally read the official HTTPS `main` files. The loc
 
 ## Local Validation
 
-Use Java 17 and an Android SDK with API 37, build-tools 36, and NDK 25.2.9519653. A local debug keystore can be supplied through `DEBUG_KEYSTORE_PATH`, `DEBUG_STORE_PASSWORD`, `DEBUG_KEY_PASSWORD`, and `DEBUG_KEY_ALIAS`. The repository ignores local JKS and password files.
+Use Java 17 and an Android SDK with API 36, build-tools 36, and NDK 25.2.9519653. A local debug keystore can be supplied through `DEBUG_KEYSTORE_PATH`, `DEBUG_STORE_PASSWORD`, `DEBUG_KEY_PASSWORD`, and `DEBUG_KEY_ALIAS`. The repository ignores local JKS and password files.
 
 ```powershell
 .uild-xenon-mobile-debug.bat --no-daemon

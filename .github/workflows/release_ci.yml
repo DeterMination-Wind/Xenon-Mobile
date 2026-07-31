@@ -44,7 +44,7 @@ jobs:
       - name: Install Android build tools
         run: |
           yes | sdkmanager --licenses >/dev/null || true
-          sdkmanager "platforms;android-37" "build-tools;36.0.0" "ndk;${ANDROID_NDK_VERSION}"
+          sdkmanager "platforms;android-36" "build-tools;36.0.0" "ndk;${ANDROID_NDK_VERSION}"
 
       - name: Restore release keystore
         shell: bash
@@ -146,6 +146,8 @@ jobs:
           git -C game-source checkout --detach "${{ matrix.source_commit }}"
           if [ "${{ matrix.variant }}" = "mindustryx" ]; then
             git -C game-source submodule update --init --recursive --depth=10
+            git -C game-source config user.name "github-actions[bot]"
+            git -C game-source config user.email "41898282+github-actions[bot]@users.noreply.github.com"
             (
               cd game-source
               bash scripts/applyPatches.sh
@@ -286,6 +288,8 @@ jobs:
           git -C game-source checkout --detach "${{ matrix.source_commit }}"
           if [ "${{ matrix.variant }}" = "mindustryx" ]; then
             git -C game-source submodule update --init --recursive --depth=10
+            git -C game-source config user.name "github-actions[bot]"
+            git -C game-source config user.email "41898282+github-actions[bot]@users.noreply.github.com"
             (
               cd game-source
               bash scripts/applyPatches.sh
