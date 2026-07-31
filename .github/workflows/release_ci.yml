@@ -391,7 +391,7 @@ jobs:
           mkdir -p release-assets release-metadata
           find release-inputs -type f \( -name '*.apk' -o -name '*.jar' -o -name '*.patch' \) -exec cp {} release-assets/ \;
           find release-inputs -type f -name '*.json' -exec cp {} release-metadata/ \;
-          test "$(find release-assets -type f -name '*.apk' | wc -l)" -eq 11
+          test "$(find release-assets -type f -name '*.apk' | wc -l)" -eq 12
           test "$(find release-assets -type f -name '*.jar' | wc -l)" -eq 3
           test "$(find release-metadata -type f -name '*.json' | wc -l)" -eq 14
 
