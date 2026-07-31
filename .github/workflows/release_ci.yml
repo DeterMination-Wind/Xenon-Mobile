@@ -44,7 +44,7 @@ jobs:
       - name: Install Android build tools
         run: |
           yes | sdkmanager --licenses >/dev/null || true
-          sdkmanager "platforms;android-36" "build-tools;36.0.0" "ndk;${ANDROID_NDK_VERSION}"
+          sdkmanager "platforms;android-37" "build-tools;36.0.0" "ndk;${ANDROID_NDK_VERSION}"
 
       - name: Restore release keystore
         shell: bash
@@ -304,6 +304,16 @@ jobs:
           else
             echo "JAR_SOURCE_DIR=game-source" >> "$GITHUB_ENV"
           fi
+
+      - name: Apply Xenon MindustryX JAR overlay
+        if: matrix.variant == 'mindustryx'
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/xenon-mobile/apply-clone-overlay.py \
+            --source "$JAR_SOURCE_DIR" \
+            --variant mindustryx \
+            --prepare-tools-pack
 
       - name: Build pinned desktop JAR
         shell: bash

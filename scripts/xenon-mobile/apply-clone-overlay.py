@@ -73,13 +73,21 @@ def defer_android_native_resolution(text: str) -> str:
         }
     }
 }
+
+def copyAndroidNativesTask = tasks.named("copyAndroidNatives")
+tasks.matching{ task ->
+    task.name.startsWith("merge") &&
+        (task.name.endsWith("JniLibFolders") || task.name.endsWith("NativeLibs"))
+}.configureEach{
+    dependsOn copyAndroidNativesTask
+}
 """
     if old not in text:
         return text
     return replace_once(text, old, new, "Android native dependency resolution")
 
 
-def pin_android_gradle_wrapper(source: Path) -> None:
+def pin_android_gradle_wrapper(source: Path, variant: str) -> None:
     wrapper = source / "gradle" / "wrapper" / "gradle-wrapper.properties"
     if not wrapper.is_file():
         raise RuntimeError(f"Gradle wrapper properties are missing: {wrapper}")
@@ -89,12 +97,47 @@ def pin_android_gradle_wrapper(source: Path) -> None:
     if len(matches) != 1:
         raise RuntimeError(f"Expected one Gradle wrapper distribution, found {len(matches)}")
     match = matches[0]
+    gradle_version = "9.3.1" if variant == "mindustryx" else "8.2.1"
     wrapper_text = (
         wrapper_text[: match.start()]
-        + "gradle-8.2.1-bin.zip"
+        + f"gradle-{gradle_version}-bin.zip"
         + wrapper_text[match.end() :]
     )
     wrapper.write_text(wrapper_text, encoding="utf-8", newline="\n")
+
+
+def prepare_mindustryx_tools_pack(source: Path) -> None:
+    build_file = source / "tools" / "build.gradle"
+    if not build_file.is_file():
+        raise RuntimeError(f"MindustryX tools build file is missing: {build_file}")
+    text = build_file.read_text(encoding="utf-8")
+    start = text.find("tasks.register('doPack')")
+    if start < 0:
+        start = text.find('tasks.register("doPack")')
+    if start < 0:
+        raise RuntimeError("MindustryX tools doPack task is missing")
+    end = text.find("tasks.register('genSprites'", start)
+    if end < 0:
+        end = text.find('tasks.register("genSprites"', start)
+    if end < 0:
+        raise RuntimeError("MindustryX tools genSprites task is missing")
+
+    block = text[start:end]
+    if "project(\":core\").sourceSets.main.runtimeClasspath" not in block:
+        block = replace_once(
+            block,
+            "classpath = sourceSets.main.runtimeClasspath",
+            "classpath = files(sourceSets.main.runtimeClasspath, project(\":core\").sourceSets.main.runtimeClasspath)",
+            "MindustryX ImagePacker classpath",
+        )
+    if 'dependsOn(":core:classes")' not in block:
+        block = replace_once(
+            block,
+            "    dependsOn(classes)\n",
+            "    dependsOn(classes)\n    dependsOn(\":core:classes\")\n",
+            "MindustryX ImagePacker core dependency",
+        )
+    build_file.write_text(text[:start] + block + text[end:], encoding="utf-8", newline="\n")
 
 
 def disable_android_minification(text: str) -> str:
@@ -237,7 +280,9 @@ def apply_overlay(
     patch_log: Path | None,
 ) -> None:
     apply_patch_series(source, patch_dir)
-    pin_android_gradle_wrapper(source)
+    if variant == "mindustryx":
+        prepare_mindustryx_tools_pack(source)
+    pin_android_gradle_wrapper(source, variant)
     gradle = source / "android" / "build.gradle"
     manifest = source / "android" / "AndroidManifest.xml"
     if not gradle.is_file() or not manifest.is_file():
@@ -333,13 +378,31 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--source", type=Path, required=True)
     parser.add_argument("--variant", required=True)
-    parser.add_argument("--slot", type=int, required=True)
-    parser.add_argument("--package-name", required=True)
-    parser.add_argument("--version-code", type=int, required=True)
-    parser.add_argument("--version-name", required=True)
+    parser.add_argument("--slot", type=int)
+    parser.add_argument("--package-name")
+    parser.add_argument("--version-code", type=int)
+    parser.add_argument("--version-name")
     parser.add_argument("--patch-dir", type=Path)
     parser.add_argument("--patch-log", type=Path)
+    parser.add_argument("--prepare-tools-pack", action="store_true")
     args = parser.parse_args()
+    if args.prepare_tools_pack:
+        if args.variant != "mindustryx":
+            parser.error("--prepare-tools-pack is only valid for the mindustryx variant")
+        prepare_mindustryx_tools_pack(args.source.resolve())
+        return
+    missing = [
+        name
+        for name, value in (
+            ("--slot", args.slot),
+            ("--package-name", args.package_name),
+            ("--version-code", args.version_code),
+            ("--version-name", args.version_name),
+        )
+        if value is None
+    ]
+    if missing:
+        parser.error("missing required arguments: " + ", ".join(missing))
     apply_overlay(
         args.source.resolve(),
         args.variant,

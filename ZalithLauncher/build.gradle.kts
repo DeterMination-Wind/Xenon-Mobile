@@ -66,7 +66,7 @@ fun getFileFromLocal(envKey: String, defaultFileName: String): File {
 
 android {
     namespace = zalithNamespace
-    compileSdk = 36
+    compileSdk = 37
 
     signingConfigs {
         create("releaseBuild") {
