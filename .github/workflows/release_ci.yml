@@ -137,6 +137,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
           clone_args=(--filter=blob:none)
           if [ "${{ matrix.variant }}" = "mindustryx" ]; then
             clone_args+=(--recurse-submodules --shallow-submodules)
@@ -279,6 +281,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
           clone_args=(--filter=blob:none)
           if [ "${{ matrix.variant }}" = "mindustryx" ]; then
             clone_args+=(--recurse-submodules --shallow-submodules)

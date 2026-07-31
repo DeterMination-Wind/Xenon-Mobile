@@ -16,6 +16,37 @@ def replace_once(text: str, old: str, new: str, label: str) -> str:
     return text.replace(old, new, 1)
 
 
+def inject_clone_intent_hook(text: str) -> str:
+    check_pattern = re.compile(
+        r"(?m)^(?P<indent>[ \t]*)checkFiles\([ \t]*getIntent\([ \t]*\)[ \t]*\);[ \t]*$"
+    )
+    check_matches = list(check_pattern.finditer(text))
+    if len(check_matches) == 1:
+        match = check_matches[0]
+        indent = match.group("indent")
+        replacement = (
+            f"{indent}checkFiles(getIntent());\n"
+            f"{indent}handleXenonBridgeIntent(getIntent());"
+        )
+        return text[: match.start()] + replacement + text[match.end() :]
+    if len(check_matches) > 1:
+        raise RuntimeError(f"Expected one clone Bridge intent hook, found {len(check_matches)}")
+
+    super_pattern = re.compile(
+        r"(?m)^(?P<indent>[ \t]*)super\.onCreate\([ \t]*savedInstanceState[ \t]*\);[ \t]*$"
+    )
+    super_matches = list(super_pattern.finditer(text))
+    if len(super_matches) != 1:
+        raise RuntimeError("Expected one AndroidLauncher onCreate super call")
+    match = super_matches[0]
+    indent = match.group("indent")
+    replacement = (
+        f"{indent}super.onCreate(savedInstanceState);\n"
+        f"{indent}handleXenonBridgeIntent(getIntent());"
+    )
+    return text[: match.start()] + replacement + text[match.end() :]
+
+
 def install_clone_bridge(source: Path, manifest: Path) -> None:
     template = Path(__file__).with_name("clone-bridge-service.java")
     if not template.is_file():
@@ -59,12 +90,7 @@ def install_clone_bridge(source: Path, manifest: Path) -> None:
     if not launcher.is_file():
         raise RuntimeError(f"Mindustry Android launcher is missing: {launcher}")
     launcher_text = launcher.read_text(encoding="utf-8")
-    launcher_text = replace_once(
-        launcher_text,
-        "        checkFiles(getIntent());\n",
-        "        checkFiles(getIntent());\n        handleXenonBridgeIntent(getIntent());\n",
-        "clone Bridge intent hook",
-    )
+    launcher_text = inject_clone_intent_hook(launcher_text)
     launcher_text = replace_once(
         launcher_text,
         "        super.onCreate(savedInstanceState);\n",
