@@ -47,6 +47,36 @@ def inject_clone_intent_hook(text: str) -> str:
     return text[: match.start()] + replacement + text[match.end() :]
 
 
+def defer_android_native_resolution(text: str) -> str:
+    old = """task copyAndroidNatives(){
+    if(!localArc){
+        configurations.natives.files.each{ jar ->
+            copy{
+                from zipTree(jar)
+                into file(\"libs/\")
+                include \"**\"
+            }
+        }
+    }
+}
+"""
+    new = """task copyAndroidNatives(){
+    if(!localArc){
+        doLast{
+            configurations.natives.files.each{ jar ->
+                copy{
+                    from zipTree(jar)
+                    into file(\"libs/\")
+                    include \"**\"
+                }
+            }
+        }
+    }
+}
+"""
+    return replace_once(text, old, new, "Android native dependency resolution")
+
+
 def install_clone_bridge(source: Path, manifest: Path) -> None:
     template = Path(__file__).with_name("clone-bridge-service.java")
     if not template.is_file():
@@ -182,6 +212,7 @@ def apply_overlay(
         + "xenonVersionCode"
         + gradle_text[version_code.end() :]
     )
+    gradle_text = defer_android_native_resolution(gradle_text)
     if 'abiFilters "arm64-v8a"' not in gradle_text:
         gradle_text = replace_once(
             gradle_text,
