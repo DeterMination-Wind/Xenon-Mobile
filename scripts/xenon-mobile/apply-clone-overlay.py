@@ -97,6 +97,19 @@ def pin_android_gradle_wrapper(source: Path) -> None:
     wrapper.write_text(wrapper_text, encoding="utf-8", newline="\n")
 
 
+def disable_android_minification(text: str) -> str:
+    text = re.sub(
+        r"(?m)^(?P<indent>[ \t]*)minifyEnabled\s*=\s*true\s*$",
+        r"\g<indent>minifyEnabled = false",
+        text,
+    )
+    return re.sub(
+        r"(?m)^(?P<indent>[ \t]*)shrinkResources\s*=\s*true\s*$",
+        r"\g<indent>shrinkResources = false",
+        text,
+    )
+
+
 def inject_clone_new_intent_hook(text: str, method_marker: str) -> str:
     super_pattern = re.compile(
         r"(?m)^(?P<indent>[ \t]*)super\.onNewIntent\([ \t]*intent[ \t]*\);[ \t]*$"
@@ -263,6 +276,7 @@ def apply_overlay(
         + gradle_text[version_code.end() :]
     )
     gradle_text = defer_android_native_resolution(gradle_text)
+    gradle_text = disable_android_minification(gradle_text)
     if 'abiFilters "arm64-v8a"' not in gradle_text:
         gradle_text = replace_once(
             gradle_text,

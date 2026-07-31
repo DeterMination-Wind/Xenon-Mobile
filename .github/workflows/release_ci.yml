@@ -180,6 +180,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          export GRADLE_USER_HOME="$RUNNER_TEMP/gradle-home"
+          mkdir -p "$GRADLE_USER_HOME"
           version_code="$(sed -n 's/^launcher_version_code=//p' ZalithLauncher/gradle.properties)"
           version_name="$GITHUB_REF_NAME"
           package_name="com.xenon.mobile.clone.${{ matrix.variant }}.slot${{ matrix.slot }}"
