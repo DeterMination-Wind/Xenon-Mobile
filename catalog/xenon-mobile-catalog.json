@@ -1,7 +1,15 @@
 {
   "schemaVersion": 1,
-  "variants": ["vanilla", "be", "mindustryx"],
-  "channels": ["stable", "be", "dev"],
+  "variants": [
+    "vanilla",
+    "be",
+    "mindustryx"
+  ],
+  "channels": [
+    "stable",
+    "be",
+    "dev"
+  ],
   "mirrors": [
     {
       "id": "mindustry.men",
@@ -9,5 +17,392 @@
       "priority": 0
     }
   ],
-  "artifacts": []
+  "artifacts": [
+    {
+      "id": "be-v0.0.0-ci-20260801-r12-apk-slot1",
+      "variant": "be",
+      "channel": "be",
+      "backend": "apk",
+      "slot": 1,
+      "versionName": "v0.0.0-ci-20260801-r12",
+      "versionCode": 200028,
+      "build": 13,
+      "buildType": "stable",
+      "javaVersion": 17,
+      "sha256": "c687fa4c42ac9995f29896b84b287974af3d0d7c38dc4fe08a283c69a5dff3cf",
+      "size": 61189745,
+      "nativeProfile": "arm64-v8a",
+      "mgVersion": "android-apk",
+      "minLauncherVersion": 1,
+      "changelog": "Xenon Mobile be slot 1",
+      "packageName": "com.xenon.mobile.clone.be.slot1",
+      "sourceRepo": "Anuken/Mindustry",
+      "sourceCommit": "20da6a38ab0874b5d971bffede3995efd3da5d70",
+      "releaseTag": "v0.0.0-ci-20260801-r12",
+      "signatureSha256": [
+        "b0d3d96fd0e179aab332b0622a36db3ae175b649a34b5f98e7ab5be01699947d"
+      ],
+      "urls": [
+        "https://github.com/DeterMination-Wind/Xenon-Mobile/releases/download/v0.0.0-ci-20260801-r12/xenon-mobile-be-slot1-v0.0.0-ci-20260801-r12-arm64.apk"
+      ]
+    },
+    {
+      "id": "be-v0.0.0-ci-20260801-r12-jar",
+      "variant": "be",
+      "channel": "be",
+      "backend": "jar",
+      "slot": null,
+      "versionName": "v0.0.0-ci-20260801-r12",
+      "versionCode": null,
+      "build": 13,
+      "buildType": "stable",
+      "javaVersion": 17,
+      "sha256": "7a1c7c1397f66f32cd38b85be3d50685fd91299687892a3ec37288357fab780a",
+      "size": 86596630,
+      "nativeProfile": "arm64-v8a",
+      "mgVersion": "mg-v1",
+      "minLauncherVersion": 1,
+      "changelog": "Xenon Mobile be JAR",
+      "packageName": null,
+      "sourceRepo": "Anuken/Mindustry",
+      "sourceCommit": "20da6a38ab0874b5d971bffede3995efd3da5d70",
+      "releaseTag": "v0.0.0-ci-20260801-r12",
+      "signatureSha256": [],
+      "urls": [
+        "https://github.com/DeterMination-Wind/Xenon-Mobile/releases/download/v0.0.0-ci-20260801-r12/xenon-mindustry-be-v0.0.0-ci-20260801-r12-arm64.jar"
+      ]
+    },
+    {
+      "id": "mindustryx-v0.0.0-ci-20260801-r12-apk-slot1",
+      "variant": "mindustryx",
+      "channel": "stable",
+      "backend": "apk",
+      "slot": 1,
+      "versionName": "v0.0.0-ci-20260801-r12",
+      "versionCode": 200028,
+      "build": 13,
+      "buildType": "stable",
+      "javaVersion": 17,
+      "sha256": "ad8108dca02fabfc400375fec5c48a81e717c239b1335fb2697bac6e355cf648",
+      "size": 78935306,
+      "nativeProfile": "arm64-v8a",
+      "mgVersion": "android-apk",
+      "minLauncherVersion": 1,
+      "changelog": "Xenon Mobile mindustryx slot 1",
+      "packageName": "com.xenon.mobile.clone.mindustryx.slot1",
+      "sourceRepo": "TinyLake/MindustryX",
+      "sourceCommit": "3b894f8518c1a36ec60f1f32af50a8b249d0f060",
+      "releaseTag": "v0.0.0-ci-20260801-r12",
+      "signatureSha256": [
+        "b0d3d96fd0e179aab332b0622a36db3ae175b649a34b5f98e7ab5be01699947d"
+      ],
+      "urls": [
+        "https://github.com/DeterMination-Wind/Xenon-Mobile/releases/download/v0.0.0-ci-20260801-r12/xenon-mobile-mindustryx-slot1-v0.0.0-ci-20260801-r12-arm64.apk"
+      ]
+    },
+    {
+      "id": "mindustryx-v0.0.0-ci-20260801-r12-apk-slot2",
+      "variant": "mindustryx",
+      "channel": "stable",
+      "backend": "apk",
+      "slot": 2,
+      "versionName": "v0.0.0-ci-20260801-r12",
+      "versionCode": 200028,
+      "build": 13,
+      "buildType": "stable",
+      "javaVersion": 17,
+      "sha256": "d8f0c6e9b7ac78d298ebee8a85f2c73951c2190a5ae46fcdcaa925274c4f6461",
+      "size": 78936540,
+      "nativeProfile": "arm64-v8a",
+      "mgVersion": "android-apk",
+      "minLauncherVersion": 1,
+      "changelog": "Xenon Mobile mindustryx slot 2",
+      "packageName": "com.xenon.mobile.clone.mindustryx.slot2",
+      "sourceRepo": "TinyLake/MindustryX",
+      "sourceCommit": "3b894f8518c1a36ec60f1f32af50a8b249d0f060",
+      "releaseTag": "v0.0.0-ci-20260801-r12",
+      "signatureSha256": [
+        "b0d3d96fd0e179aab332b0622a36db3ae175b649a34b5f98e7ab5be01699947d"
+      ],
+      "urls": [
+        "https://github.com/DeterMination-Wind/Xenon-Mobile/releases/download/v0.0.0-ci-20260801-r12/xenon-mobile-mindustryx-slot2-v0.0.0-ci-20260801-r12-arm64.apk"
+      ]
+    },
+    {
+      "id": "mindustryx-v0.0.0-ci-20260801-r12-apk-slot3",
+      "variant": "mindustryx",
+      "channel": "stable",
+      "backend": "apk",
+      "slot": 3,
+      "versionName": "v0.0.0-ci-20260801-r12",
+      "versionCode": 200028,
+      "build": 13,
+      "buildType": "stable",
+      "javaVersion": 17,
+      "sha256": "40a98e688626048f43959ff5dc0ebcd5431110ef8067aea44cd137a424bceb5e",
+      "size": 78937635,
+      "nativeProfile": "arm64-v8a",
+      "mgVersion": "android-apk",
+      "minLauncherVersion": 1,
+      "changelog": "Xenon Mobile mindustryx slot 3",
+      "packageName": "com.xenon.mobile.clone.mindustryx.slot3",
+      "sourceRepo": "TinyLake/MindustryX",
+      "sourceCommit": "3b894f8518c1a36ec60f1f32af50a8b249d0f060",
+      "releaseTag": "v0.0.0-ci-20260801-r12",
+      "signatureSha256": [
+        "b0d3d96fd0e179aab332b0622a36db3ae175b649a34b5f98e7ab5be01699947d"
+      ],
+      "urls": [
+        "https://github.com/DeterMination-Wind/Xenon-Mobile/releases/download/v0.0.0-ci-20260801-r12/xenon-mobile-mindustryx-slot3-v0.0.0-ci-20260801-r12-arm64.apk"
+      ]
+    },
+    {
+      "id": "mindustryx-v0.0.0-ci-20260801-r12-apk-slot4",
+      "variant": "mindustryx",
+      "channel": "stable",
+      "backend": "apk",
+      "slot": 4,
+      "versionName": "v0.0.0-ci-20260801-r12",
+      "versionCode": 200028,
+      "build": 13,
+      "buildType": "stable",
+      "javaVersion": 17,
+      "sha256": "3524cca53de753b6fa8ae4db830f5c2509f5e45bea5ac2d83e268d1427edf8ce",
+      "size": 78946863,
+      "nativeProfile": "arm64-v8a",
+      "mgVersion": "android-apk",
+      "minLauncherVersion": 1,
+      "changelog": "Xenon Mobile mindustryx slot 4",
+      "packageName": "com.xenon.mobile.clone.mindustryx.slot4",
+      "sourceRepo": "TinyLake/MindustryX",
+      "sourceCommit": "3b894f8518c1a36ec60f1f32af50a8b249d0f060",
+      "releaseTag": "v0.0.0-ci-20260801-r12",
+      "signatureSha256": [
+        "b0d3d96fd0e179aab332b0622a36db3ae175b649a34b5f98e7ab5be01699947d"
+      ],
+      "urls": [
+        "https://github.com/DeterMination-Wind/Xenon-Mobile/releases/download/v0.0.0-ci-20260801-r12/xenon-mobile-mindustryx-slot4-v0.0.0-ci-20260801-r12-arm64.apk"
+      ]
+    },
+    {
+      "id": "mindustryx-v0.0.0-ci-20260801-r12-apk-slot5",
+      "variant": "mindustryx",
+      "channel": "stable",
+      "backend": "apk",
+      "slot": 5,
+      "versionName": "v0.0.0-ci-20260801-r12",
+      "versionCode": 200028,
+      "build": 13,
+      "buildType": "stable",
+      "javaVersion": 17,
+      "sha256": "6223306906a7345f92abf90b9820336a1d286a4610a2a602eb0e42821d091c41",
+      "size": 78955969,
+      "nativeProfile": "arm64-v8a",
+      "mgVersion": "android-apk",
+      "minLauncherVersion": 1,
+      "changelog": "Xenon Mobile mindustryx slot 5",
+      "packageName": "com.xenon.mobile.clone.mindustryx.slot5",
+      "sourceRepo": "TinyLake/MindustryX",
+      "sourceCommit": "3b894f8518c1a36ec60f1f32af50a8b249d0f060",
+      "releaseTag": "v0.0.0-ci-20260801-r12",
+      "signatureSha256": [
+        "b0d3d96fd0e179aab332b0622a36db3ae175b649a34b5f98e7ab5be01699947d"
+      ],
+      "urls": [
+        "https://github.com/DeterMination-Wind/Xenon-Mobile/releases/download/v0.0.0-ci-20260801-r12/xenon-mobile-mindustryx-slot5-v0.0.0-ci-20260801-r12-arm64.apk"
+      ]
+    },
+    {
+      "id": "mindustryx-v0.0.0-ci-20260801-r12-jar",
+      "variant": "mindustryx",
+      "channel": "stable",
+      "backend": "jar",
+      "slot": null,
+      "versionName": "v0.0.0-ci-20260801-r12",
+      "versionCode": null,
+      "build": 13,
+      "buildType": "stable",
+      "javaVersion": 17,
+      "sha256": "6635d85135792843e4060e5d6be664a1ed37e806406156a5f0f32e436b2ebdea",
+      "size": 89213400,
+      "nativeProfile": "arm64-v8a",
+      "mgVersion": "mg-v1",
+      "minLauncherVersion": 1,
+      "changelog": "Xenon Mobile mindustryx JAR",
+      "packageName": null,
+      "sourceRepo": "TinyLake/MindustryX",
+      "sourceCommit": "3b894f8518c1a36ec60f1f32af50a8b249d0f060",
+      "releaseTag": "v0.0.0-ci-20260801-r12",
+      "signatureSha256": [],
+      "urls": [
+        "https://github.com/DeterMination-Wind/Xenon-Mobile/releases/download/v0.0.0-ci-20260801-r12/xenon-mindustry-mindustryx-v0.0.0-ci-20260801-r12-arm64.jar"
+      ]
+    },
+    {
+      "id": "vanilla-v0.0.0-ci-20260801-r12-apk-slot1",
+      "variant": "vanilla",
+      "channel": "stable",
+      "backend": "apk",
+      "slot": 1,
+      "versionName": "v0.0.0-ci-20260801-r12",
+      "versionCode": 200028,
+      "build": 13,
+      "buildType": "stable",
+      "javaVersion": 17,
+      "sha256": "338900198c6ffec990c34104f5a3735b711216800f1dd9c8ffc888e8a44a65cf",
+      "size": 61189737,
+      "nativeProfile": "arm64-v8a",
+      "mgVersion": "android-apk",
+      "minLauncherVersion": 1,
+      "changelog": "Xenon Mobile vanilla slot 1",
+      "packageName": "com.xenon.mobile.clone.vanilla.slot1",
+      "sourceRepo": "Anuken/Mindustry",
+      "sourceCommit": "20da6a38ab0874b5d971bffede3995efd3da5d70",
+      "releaseTag": "v0.0.0-ci-20260801-r12",
+      "signatureSha256": [
+        "b0d3d96fd0e179aab332b0622a36db3ae175b649a34b5f98e7ab5be01699947d"
+      ],
+      "urls": [
+        "https://github.com/DeterMination-Wind/Xenon-Mobile/releases/download/v0.0.0-ci-20260801-r12/xenon-mobile-vanilla-slot1-v0.0.0-ci-20260801-r12-arm64.apk"
+      ]
+    },
+    {
+      "id": "vanilla-v0.0.0-ci-20260801-r12-apk-slot2",
+      "variant": "vanilla",
+      "channel": "stable",
+      "backend": "apk",
+      "slot": 2,
+      "versionName": "v0.0.0-ci-20260801-r12",
+      "versionCode": 200028,
+      "build": 13,
+      "buildType": "stable",
+      "javaVersion": 17,
+      "sha256": "93579fa79d308a6747f445064fbe19835e074f53ad7eb8b69febc1040eccb8a9",
+      "size": 61189743,
+      "nativeProfile": "arm64-v8a",
+      "mgVersion": "android-apk",
+      "minLauncherVersion": 1,
+      "changelog": "Xenon Mobile vanilla slot 2",
+      "packageName": "com.xenon.mobile.clone.vanilla.slot2",
+      "sourceRepo": "Anuken/Mindustry",
+      "sourceCommit": "20da6a38ab0874b5d971bffede3995efd3da5d70",
+      "releaseTag": "v0.0.0-ci-20260801-r12",
+      "signatureSha256": [
+        "b0d3d96fd0e179aab332b0622a36db3ae175b649a34b5f98e7ab5be01699947d"
+      ],
+      "urls": [
+        "https://github.com/DeterMination-Wind/Xenon-Mobile/releases/download/v0.0.0-ci-20260801-r12/xenon-mobile-vanilla-slot2-v0.0.0-ci-20260801-r12-arm64.apk"
+      ]
+    },
+    {
+      "id": "vanilla-v0.0.0-ci-20260801-r12-apk-slot3",
+      "variant": "vanilla",
+      "channel": "stable",
+      "backend": "apk",
+      "slot": 3,
+      "versionName": "v0.0.0-ci-20260801-r12",
+      "versionCode": 200028,
+      "build": 13,
+      "buildType": "stable",
+      "javaVersion": 17,
+      "sha256": "8b2397fa5ed03a061e6340446449581a95b5fa6799be4c5ec03240b5264345c5",
+      "size": 61189743,
+      "nativeProfile": "arm64-v8a",
+      "mgVersion": "android-apk",
+      "minLauncherVersion": 1,
+      "changelog": "Xenon Mobile vanilla slot 3",
+      "packageName": "com.xenon.mobile.clone.vanilla.slot3",
+      "sourceRepo": "Anuken/Mindustry",
+      "sourceCommit": "20da6a38ab0874b5d971bffede3995efd3da5d70",
+      "releaseTag": "v0.0.0-ci-20260801-r12",
+      "signatureSha256": [
+        "b0d3d96fd0e179aab332b0622a36db3ae175b649a34b5f98e7ab5be01699947d"
+      ],
+      "urls": [
+        "https://github.com/DeterMination-Wind/Xenon-Mobile/releases/download/v0.0.0-ci-20260801-r12/xenon-mobile-vanilla-slot3-v0.0.0-ci-20260801-r12-arm64.apk"
+      ]
+    },
+    {
+      "id": "vanilla-v0.0.0-ci-20260801-r12-apk-slot4",
+      "variant": "vanilla",
+      "channel": "stable",
+      "backend": "apk",
+      "slot": 4,
+      "versionName": "v0.0.0-ci-20260801-r12",
+      "versionCode": 200028,
+      "build": 13,
+      "buildType": "stable",
+      "javaVersion": 17,
+      "sha256": "d6427942d73909c183a33829f8eae624b5bdc9b65d862c8aeca5f1df31d6bf55",
+      "size": 61189735,
+      "nativeProfile": "arm64-v8a",
+      "mgVersion": "android-apk",
+      "minLauncherVersion": 1,
+      "changelog": "Xenon Mobile vanilla slot 4",
+      "packageName": "com.xenon.mobile.clone.vanilla.slot4",
+      "sourceRepo": "Anuken/Mindustry",
+      "sourceCommit": "20da6a38ab0874b5d971bffede3995efd3da5d70",
+      "releaseTag": "v0.0.0-ci-20260801-r12",
+      "signatureSha256": [
+        "b0d3d96fd0e179aab332b0622a36db3ae175b649a34b5f98e7ab5be01699947d"
+      ],
+      "urls": [
+        "https://github.com/DeterMination-Wind/Xenon-Mobile/releases/download/v0.0.0-ci-20260801-r12/xenon-mobile-vanilla-slot4-v0.0.0-ci-20260801-r12-arm64.apk"
+      ]
+    },
+    {
+      "id": "vanilla-v0.0.0-ci-20260801-r12-apk-slot5",
+      "variant": "vanilla",
+      "channel": "stable",
+      "backend": "apk",
+      "slot": 5,
+      "versionName": "v0.0.0-ci-20260801-r12",
+      "versionCode": 200028,
+      "build": 13,
+      "buildType": "stable",
+      "javaVersion": 17,
+      "sha256": "d3d02b2bd77fc90cea0a6f24ecc4cc43def7d107184ab0f887ebe90c15942e15",
+      "size": 61189752,
+      "nativeProfile": "arm64-v8a",
+      "mgVersion": "android-apk",
+      "minLauncherVersion": 1,
+      "changelog": "Xenon Mobile vanilla slot 5",
+      "packageName": "com.xenon.mobile.clone.vanilla.slot5",
+      "sourceRepo": "Anuken/Mindustry",
+      "sourceCommit": "20da6a38ab0874b5d971bffede3995efd3da5d70",
+      "releaseTag": "v0.0.0-ci-20260801-r12",
+      "signatureSha256": [
+        "b0d3d96fd0e179aab332b0622a36db3ae175b649a34b5f98e7ab5be01699947d"
+      ],
+      "urls": [
+        "https://github.com/DeterMination-Wind/Xenon-Mobile/releases/download/v0.0.0-ci-20260801-r12/xenon-mobile-vanilla-slot5-v0.0.0-ci-20260801-r12-arm64.apk"
+      ]
+    },
+    {
+      "id": "vanilla-v0.0.0-ci-20260801-r12-jar",
+      "variant": "vanilla",
+      "channel": "stable",
+      "backend": "jar",
+      "slot": null,
+      "versionName": "v0.0.0-ci-20260801-r12",
+      "versionCode": null,
+      "build": 13,
+      "buildType": "stable",
+      "javaVersion": 17,
+      "sha256": "f31115e8ebd61b27ae9eb3c2a28427bba817b86bac080b1c5136d374fabcde39",
+      "size": 86591287,
+      "nativeProfile": "arm64-v8a",
+      "mgVersion": "mg-v1",
+      "minLauncherVersion": 1,
+      "changelog": "Xenon Mobile vanilla JAR",
+      "packageName": null,
+      "sourceRepo": "Anuken/Mindustry",
+      "sourceCommit": "20da6a38ab0874b5d971bffede3995efd3da5d70",
+      "releaseTag": "v0.0.0-ci-20260801-r12",
+      "signatureSha256": [],
+      "urls": [
+        "https://github.com/DeterMination-Wind/Xenon-Mobile/releases/download/v0.0.0-ci-20260801-r12/xenon-mindustry-vanilla-v0.0.0-ci-20260801-r12-arm64.jar"
+      ]
+    }
+  ]
 }
