@@ -163,7 +163,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          version_code="$(sed -n 's/^launcher_version_code=//p' ZalithLauncher/gradle.properties)"
+          base_version_code="$(sed -n 's/^launcher_version_code=//p' ZalithLauncher/gradle.properties)"
+          version_code="$((base_version_code + GITHUB_RUN_NUMBER))"
           version_name="$GITHUB_REF_NAME"
           package_name="com.xenon.mobile.clone.${{ matrix.variant }}.slot${{ matrix.slot }}"
           python3 scripts/xenon-mobile/apply-clone-overlay.py \
@@ -182,7 +183,8 @@ jobs:
           set -euo pipefail
           export GRADLE_USER_HOME="$RUNNER_TEMP/gradle-home"
           mkdir -p "$GRADLE_USER_HOME"
-          version_code="$(sed -n 's/^launcher_version_code=//p' ZalithLauncher/gradle.properties)"
+          base_version_code="$(sed -n 's/^launcher_version_code=//p' ZalithLauncher/gradle.properties)"
+          version_code="$((base_version_code + GITHUB_RUN_NUMBER))"
           version_name="$GITHUB_REF_NAME"
           package_name="com.xenon.mobile.clone.${{ matrix.variant }}.slot${{ matrix.slot }}"
           alias="${RELEASE_KEY_ALIAS:-movtery_zalith}"
