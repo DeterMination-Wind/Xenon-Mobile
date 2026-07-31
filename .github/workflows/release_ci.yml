@@ -391,6 +391,12 @@ jobs:
           mkdir -p release-assets release-metadata
           find release-inputs -type f \( -name '*.apk' -o -name '*.jar' -o -name '*.patch' \) -exec cp {} release-assets/ \;
           find release-inputs -type f -name '*.json' -exec cp {} release-metadata/ \;
+          find release-assets -type f -name '*.patch' -empty -print -delete
+          empty_assets="$(find release-assets -type f -empty)"
+          if [ -n "$empty_assets" ]; then
+            printf 'Empty release assets:\n%s\n' "$empty_assets"
+            exit 1
+          fi
           test "$(find release-assets -type f -name '*.apk' | wc -l)" -eq 12
           test "$(find release-assets -type f -name '*.jar' | wc -l)" -eq 3
           test "$(find release-metadata -type f -name '*.json' | wc -l)" -eq 14
