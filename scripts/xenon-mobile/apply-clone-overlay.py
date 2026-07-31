@@ -97,6 +97,37 @@ def pin_android_gradle_wrapper(source: Path) -> None:
     wrapper.write_text(wrapper_text, encoding="utf-8", newline="\n")
 
 
+def inject_clone_new_intent_hook(text: str, method_marker: str) -> str:
+    super_pattern = re.compile(
+        r"(?m)^(?P<indent>[ \t]*)super\.onNewIntent\([ \t]*intent[ \t]*\);[ \t]*$"
+    )
+    super_matches = list(super_pattern.finditer(text))
+    if len(super_matches) == 1:
+        match = super_matches[0]
+        indent = match.group("indent")
+        replacement = (
+            f"{indent}super.onNewIntent(intent);\n"
+            f"{indent}setIntent(intent);\n"
+            f"{indent}handleXenonBridgeIntent(intent);"
+        )
+        return text[: match.start()] + replacement + text[match.end() :]
+    if len(super_matches) > 1:
+        raise RuntimeError(f"Expected one AndroidLauncher onNewIntent super call, found {len(super_matches)}")
+
+    declaration_pattern = re.compile(r"(?m)^[ \t]*(?:protected|public) void onNewIntent\(")
+    if declaration_pattern.search(text):
+        raise RuntimeError("AndroidLauncher onNewIntent has no recognizable super call")
+    method = (
+        "    @Override\n"
+        "    protected void onNewIntent(Intent intent){\n"
+        "        super.onNewIntent(intent);\n"
+        "        setIntent(intent);\n"
+        "        handleXenonBridgeIntent(intent);\n"
+        "    }\n\n"
+    )
+    return replace_once(text, method_marker, method + method_marker, "clone Bridge join handler")
+
+
 def install_clone_bridge(source: Path, manifest: Path) -> None:
     template = Path(__file__).with_name("clone-bridge-service.java")
     if not template.is_file():
@@ -149,7 +180,7 @@ def install_clone_bridge(source: Path, manifest: Path) -> None:
         "clone Bridge activity registration",
     )
     method_marker = "    @Override\n    public void onRequestPermissionsResult"
-    method = (
+    bridge_method = (
         "    private void handleXenonBridgeIntent(Intent intent){\n"
         "        if(intent == null || !\"com.xenon.mobile.bridge.JOIN\".equals(intent.getAction())) return;\n"
         "        String host = intent.getStringExtra(\"host\");\n"
@@ -157,19 +188,17 @@ def install_clone_bridge(source: Path, manifest: Path) -> None:
         "        if(host == null || host.trim().isEmpty() || port < 1 || port > 65535) return;\n"
         "        Core.app.post(() -> ui.join.connect(host, port));\n"
         "    }\n\n"
-        "    @Override\n"
-        "    protected void onNewIntent(Intent intent){\n"
-        "        super.onNewIntent(intent);\n"
-        "        setIntent(intent);\n"
-        "        handleXenonBridgeIntent(intent);\n"
-        "    }\n\n"
+    )
+    destroy_method = (
         "    @Override\n"
         "    protected void onDestroy(){\n"
         "        xenon.mobile.bridge.MindustryBridgeService.unregisterLauncher(this);\n"
         "        super.onDestroy();\n"
         "    }\n\n"
     )
-    launcher_text = replace_once(launcher_text, method_marker, method + method_marker, "clone Bridge join handler")
+    launcher_text = replace_once(launcher_text, method_marker, bridge_method + method_marker, "clone Bridge join handler")
+    launcher_text = inject_clone_new_intent_hook(launcher_text, method_marker)
+    launcher_text = replace_once(launcher_text, method_marker, destroy_method + method_marker, "clone Bridge lifecycle cleanup")
     launcher.write_text(launcher_text, encoding="utf-8", newline="\n")
 
 
