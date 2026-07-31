@@ -123,12 +123,26 @@ def prepare_mindustryx_tools_pack(source: Path) -> None:
         raise RuntimeError("MindustryX tools genSprites task is missing")
 
     block = text[start:end]
+    if "xenonArcNativeResources" not in block:
+        block = replace_once(
+            block,
+            "    doLast{\n",
+            "    doLast{\n        def xenonArcNativeResources = rootProject.file(\"../Arc/natives/natives-desktop/libs\")\n",
+            "MindustryX ImagePacker native resources",
+        )
     if "project(\":core\").sourceSets.main.runtimeClasspath" not in block:
         block = replace_once(
             block,
             "classpath = sourceSets.main.runtimeClasspath",
-            "classpath = files(sourceSets.main.runtimeClasspath, project(\":core\").sourceSets.main.runtimeClasspath)",
+            "classpath = files(sourceSets.main.runtimeClasspath, project(\":core\").sourceSets.main.runtimeClasspath, xenonArcNativeResources)",
             "MindustryX ImagePacker classpath",
+        )
+    elif "xenonArcNativeResources)" not in block:
+        block = replace_once(
+            block,
+            "classpath = files(sourceSets.main.runtimeClasspath, project(\":core\").sourceSets.main.runtimeClasspath)",
+            "classpath = files(sourceSets.main.runtimeClasspath, project(\":core\").sourceSets.main.runtimeClasspath, xenonArcNativeResources)",
+            "MindustryX ImagePacker native resources classpath",
         )
     if 'dependsOn(":core:classes")' not in block:
         block = replace_once(
