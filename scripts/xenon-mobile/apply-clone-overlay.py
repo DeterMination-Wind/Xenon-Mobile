@@ -91,7 +91,7 @@ def pin_android_gradle_wrapper(source: Path) -> None:
     match = matches[0]
     wrapper_text = (
         wrapper_text[: match.start()]
-        + "gradle-9.3.0-bin.zip"
+        + "gradle-8.2.1-bin.zip"
         + wrapper_text[match.end() :]
     )
     wrapper.write_text(wrapper_text, encoding="utf-8", newline="\n")
