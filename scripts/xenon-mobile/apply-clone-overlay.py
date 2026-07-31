@@ -74,7 +74,27 @@ def defer_android_native_resolution(text: str) -> str:
     }
 }
 """
+    if old not in text:
+        return text
     return replace_once(text, old, new, "Android native dependency resolution")
+
+
+def pin_android_gradle_wrapper(source: Path) -> None:
+    wrapper = source / "gradle" / "wrapper" / "gradle-wrapper.properties"
+    if not wrapper.is_file():
+        raise RuntimeError(f"Gradle wrapper properties are missing: {wrapper}")
+    wrapper_text = wrapper.read_text(encoding="utf-8")
+    pattern = re.compile(r"gradle-[0-9]+\.[0-9]+(?:\.[0-9]+)?-(?:bin|all)\.zip")
+    matches = list(pattern.finditer(wrapper_text))
+    if len(matches) != 1:
+        raise RuntimeError(f"Expected one Gradle wrapper distribution, found {len(matches)}")
+    match = matches[0]
+    wrapper_text = (
+        wrapper_text[: match.start()]
+        + "gradle-9.3.0-bin.zip"
+        + wrapper_text[match.end() :]
+    )
+    wrapper.write_text(wrapper_text, encoding="utf-8", newline="\n")
 
 
 def install_clone_bridge(source: Path, manifest: Path) -> None:
@@ -175,6 +195,7 @@ def apply_overlay(
     patch_log: Path | None,
 ) -> None:
     apply_patch_series(source, patch_dir)
+    pin_android_gradle_wrapper(source)
     gradle = source / "android" / "build.gradle"
     manifest = source / "android" / "AndroidManifest.xml"
     if not gradle.is_file() or not manifest.is_file():
