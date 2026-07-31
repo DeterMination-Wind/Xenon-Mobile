@@ -415,7 +415,7 @@ jobs:
           cp release-assets/xenon-mobile-catalog.json "$RUNNER_TEMP/xenon-mobile-catalog.json"
 
       - name: Validate catalog and source lock
-        run: ./gradlew --no-daemon -PxenonMobileCatalog=release-assets/xenon-mobile-catalog.json validateXenonMobileRelease
+        run: bash ./gradlew --no-daemon -PxenonMobileCatalog=release-assets/xenon-mobile-catalog.json validateXenonMobileRelease
 
       - name: Package source, patches, lock and notices
         shell: bash
