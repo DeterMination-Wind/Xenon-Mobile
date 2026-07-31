@@ -9,6 +9,7 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE"
@@ -22,6 +23,11 @@
     <uses-permission android:name="android.permission.RECORD_AUDIO"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE"/>
     <uses-permission android:name="android.permission.HIGH_SAMPLING_RATE_SENSORS"/>
+
+    <permission
+        android:name="com.xenon.mobile.permission.MINDUSTRY_BRIDGE"
+        android:label="Xenon Mobile Mindustry bridge"
+        android:protectionLevel="signature" />
 
     <application
         android:name=".ZLApplication"
@@ -146,6 +152,18 @@
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_TYPE"
                 android:value="Running the game engine and maintaining game process" />
         </service>
+
+        <service
+            android:name=".game.mindustry.MindustryBridgeService"
+            android:enabled="true"
+            android:exported="true"
+            android:permission="com.xenon.mobile.permission.MINDUSTRY_BRIDGE"
+            android:process=":game" />
+
+        <receiver
+            android:name=".game.mindustry.MindustryInstallReceiver"
+            android:enabled="true"
+            android:exported="false" />
 
         <service
             android:name=".terracotta.TerracottaVPNService"

@@ -1,65 +1,442 @@
-name: Android CI
+name: Xenon Mobile Release
 
 on:
-  release:
-    types:
-      - published
+  push:
+    tags:
+      - "v*"
 
 permissions:
   contents: write
+  actions: read
+
+concurrency:
+  group: xenon-mobile-release-${{ github.ref_name }}
+  cancel-in-progress: false
+
+env:
+  ANDROID_NDK_VERSION: 25.2.9519653
+  HUB_PACKAGE_NAME: com.xenon.mobile
 
 jobs:
-  Build:
-    uses: ./.github/workflows/build.yml
-    with:
-      variant: Release
-    secrets:
-      KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
-      STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
-      OAUTH_CLIENT_ID: ${{ secrets.OAUTH_CLIENT_ID }}
-      CURSEFORGE_API_KEY: ${{ secrets.CURSEFORGE_API_KEY }}
-
-  Upload-to-Release:
-    needs: Build
+  hub:
+    name: Build Hub (arm64)
     runs-on: ubuntu-latest
-    if: success()
-
+    env:
+      SIGNING_KEYSTORE_BASE64: ${{ secrets.SIGNING_KEYSTORE_BASE64 }}
+      STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
+      KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+      RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
     steps:
-      - name: Download Files
-        uses: actions/download-artifact@v8
+      - name: Checkout
+        uses: actions/checkout@v6
         with:
-          path: ./artifacts
+          submodules: recursive
 
-      - name: Organize Artifacts
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android build tools
         run: |
-          mkdir -p ./apks
-          mkdir -p ./mappings
-          
-          find ./artifacts -name "*.apk" -type f -exec cp {} ./apks/ \;
-          
-          # 检查是否有APK文件
-          if [ -z "$(ls -A ./apks/)" ]; then
-            echo "No APK files found to upload!"
-            exit 1
-          fi
-          
-          # 处理映射文件 区分架构
-          for mapping_dir in ./artifacts/mapping\ \(*\)/; do
-            if [ -d "$mapping_dir" ] && [ -f "${mapping_dir}mapping.txt" ]; then
-              dirname=$(basename "$mapping_dir")
-              cp "${mapping_dir}mapping.txt" "./mappings/${dirname}.txt"
-              echo "Copied: ${dirname}.txt"
-            fi
-          done
-          
-          echo "Found $(ls ./apks/ | wc -l) APK file(s)"
-          echo "Found $(ls ./mappings/ | wc -l) Mapping file(s)"
+          yes | sdkmanager --licenses >/dev/null || true
+          sdkmanager "platforms;android-37" "build-tools;36.0.0" "ndk;${ANDROID_NDK_VERSION}"
 
-      - name: Upload To Release
-        uses: softprops/action-gh-release@v3
+      - name: Restore release keystore
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${SIGNING_KEYSTORE_BASE64:-}" || {
+            echo "SIGNING_KEYSTORE_BASE64 is required for a signed release" >&2
+            exit 1
+          }
+          test -n "${STORE_PASSWORD:-}" || { echo "STORE_PASSWORD is required" >&2; exit 1; }
+          test -n "${KEY_PASSWORD:-}" || { echo "KEY_PASSWORD is required" >&2; exit 1; }
+          key="$RUNNER_TEMP/xenon-release.jks"
+          printf '%s' "$SIGNING_KEYSTORE_BASE64" | base64 --decode > "$key"
+          test -s "$key"
+          echo "RELEASE_KEYSTORE_PATH=$key" >> "$GITHUB_ENV"
+
+      - name: Build Hub APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          chmod +x gradlew
+          ./gradlew --no-daemon :ZalithLauncher:assembleRelease -Darch=arm64
+          apk="$(find ZalithLauncher/build/outputs/apk/release -type f -name '*.apk' | sort | head -n 1)"
+          test -n "$apk"
+          cp "$apk" "$RUNNER_TEMP/xenon-mobile-hub-${GITHUB_REF_NAME}-arm64.apk"
+
+      - name: Upload Hub APK
+        uses: actions/upload-artifact@v4
         with:
-          tag_name: ${{ github.event.release.tag_name }}
-          files: |
-            ./apks/*.apk
-            ./mappings/*.txt
+          name: xenon-mobile-hub
+          path: ${{ runner.temp }}/xenon-mobile-hub-${{ github.ref_name }}-arm64.apk
+          if-no-files-found: error
+
+  clone:
+    name: Build ${{ matrix.variant }} slot ${{ matrix.slot }} APK
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { variant: vanilla, slot: 1, source_repo: Anuken/Mindustry, source_commit: 20da6a38ab0874b5d971bffede3995efd3da5d70, channel: stable }
+          - { variant: vanilla, slot: 2, source_repo: Anuken/Mindustry, source_commit: 20da6a38ab0874b5d971bffede3995efd3da5d70, channel: stable }
+          - { variant: vanilla, slot: 3, source_repo: Anuken/Mindustry, source_commit: 20da6a38ab0874b5d971bffede3995efd3da5d70, channel: stable }
+          - { variant: vanilla, slot: 4, source_repo: Anuken/Mindustry, source_commit: 20da6a38ab0874b5d971bffede3995efd3da5d70, channel: stable }
+          - { variant: vanilla, slot: 5, source_repo: Anuken/Mindustry, source_commit: 20da6a38ab0874b5d971bffede3995efd3da5d70, channel: stable }
+          - { variant: mindustryx, slot: 1, source_repo: TinyLake/MindustryX, source_commit: 3b894f8518c1a36ec60f1f32af50a8b249d0f060, channel: stable }
+          - { variant: mindustryx, slot: 2, source_repo: TinyLake/MindustryX, source_commit: 3b894f8518c1a36ec60f1f32af50a8b249d0f060, channel: stable }
+          - { variant: mindustryx, slot: 3, source_repo: TinyLake/MindustryX, source_commit: 3b894f8518c1a36ec60f1f32af50a8b249d0f060, channel: stable }
+          - { variant: mindustryx, slot: 4, source_repo: TinyLake/MindustryX, source_commit: 3b894f8518c1a36ec60f1f32af50a8b249d0f060, channel: stable }
+          - { variant: mindustryx, slot: 5, source_repo: TinyLake/MindustryX, source_commit: 3b894f8518c1a36ec60f1f32af50a8b249d0f060, channel: stable }
+          - { variant: be, slot: 1, source_repo: Anuken/Mindustry, source_commit: 20da6a38ab0874b5d971bffede3995efd3da5d70, channel: be }
+    env:
+      SIGNING_KEYSTORE_BASE64: ${{ secrets.SIGNING_KEYSTORE_BASE64 }}
+      STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
+      KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+      RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
+    steps:
+      - name: Checkout Xenon Mobile
+        uses: actions/checkout@v6
+        with:
+          submodules: recursive
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android build tools
+        run: |
+          yes | sdkmanager --licenses >/dev/null || true
+          sdkmanager "platforms;android-36" "build-tools;36.0.0" "ndk;${ANDROID_NDK_VERSION}"
+
+      - name: Restore release keystore
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${SIGNING_KEYSTORE_BASE64:-}" || { echo "SIGNING_KEYSTORE_BASE64 is required" >&2; exit 1; }
+          test -n "${STORE_PASSWORD:-}" || { echo "STORE_PASSWORD is required" >&2; exit 1; }
+          test -n "${KEY_PASSWORD:-}" || { echo "KEY_PASSWORD is required" >&2; exit 1; }
+          key="$RUNNER_TEMP/xenon-release.jks"
+          printf '%s' "$SIGNING_KEYSTORE_BASE64" | base64 --decode > "$key"
+          test -s "$key"
+          echo "CLONE_KEYSTORE_PATH=$key" >> "$GITHUB_ENV"
+
+      - name: Checkout pinned Mindustry source
+        shell: bash
+        run: |
+          set -euo pipefail
+          clone_args=(--filter=blob:none)
+          if [ "${{ matrix.variant }}" = "mindustryx" ]; then
+            clone_args+=(--recurse-submodules --shallow-submodules)
+          fi
+          git clone "${clone_args[@]}" "https://github.com/${{ matrix.source_repo }}.git" game-source
+          git -C game-source fetch --depth=1 origin "${{ matrix.source_commit }}"
+          git -C game-source checkout --detach "${{ matrix.source_commit }}"
+          if [ "${{ matrix.variant }}" = "mindustryx" ]; then
+            git -C game-source submodule update --init --recursive --depth=10
+            (
+              cd game-source
+              bash scripts/applyPatches.sh
+            )
+            echo "CLONE_SOURCE_DIR=game-source/work" >> "$GITHUB_ENV"
+          else
+            echo "CLONE_SOURCE_DIR=game-source" >> "$GITHUB_ENV"
+          fi
+
+      - name: Apply Xenon clone overlay
+        shell: bash
+        run: |
+          set -euo pipefail
+          version_code="$(sed -n 's/^launcher_version_code=//p' ZalithLauncher/gradle.properties)"
+          version_name="$GITHUB_REF_NAME"
+          package_name="com.xenon.mobile.clone.${{ matrix.variant }}.slot${{ matrix.slot }}"
+          python3 scripts/xenon-mobile/apply-clone-overlay.py \
+            --source "$CLONE_SOURCE_DIR" \
+            --variant "${{ matrix.variant }}" \
+            --slot "${{ matrix.slot }}" \
+            --package-name "$package_name" \
+            --version-code "$version_code" \
+            --version-name "$version_name" \
+            --patch-dir "$GITHUB_WORKSPACE/patches/client" \
+            --patch-log "$RUNNER_TEMP/xenon-mobile-${{ matrix.variant }}-slot${{ matrix.slot }}-${GITHUB_REF_NAME}.patch"
+
+      - name: Build pinned clone APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          version_code="$(sed -n 's/^launcher_version_code=//p' ZalithLauncher/gradle.properties)"
+          version_name="$GITHUB_REF_NAME"
+          package_name="com.xenon.mobile.clone.${{ matrix.variant }}.slot${{ matrix.slot }}"
+          alias="${RELEASE_KEY_ALIAS:-movtery_zalith}"
+          {
+            echo "RELEASE_STORE_FILE=$CLONE_KEYSTORE_PATH"
+            echo "RELEASE_STORE_PASSWORD=$STORE_PASSWORD"
+            echo "RELEASE_KEY_ALIAS=$alias"
+            echo "RELEASE_KEY_PASSWORD=$KEY_PASSWORD"
+          } >> "$CLONE_SOURCE_DIR/gradle.properties"
+          type=official
+          if [ "${{ matrix.variant }}" = "be" ]; then type=bleeding-edge; fi
+          chmod +x "$CLONE_SOURCE_DIR/gradlew"
+          gradle_args=(--no-daemon :android:assembleRelease)
+          if [ "${{ matrix.variant }}" != "mindustryx" ]; then
+            gradle_args+=(-PnoLocalArc)
+          fi
+          gradle_args+=(
+            -Pbuildversion="$GITHUB_RUN_NUMBER"
+            -PversionType="$type"
+            -PversionModifier=release
+            -PxenonPackageName="$package_name"
+            -PxenonVersionCode="$version_code"
+            -PxenonVersionName="$version_name"
+          )
+          (
+            cd "$CLONE_SOURCE_DIR"
+            ./gradlew "${gradle_args[@]}"
+          )
+          apk="$(find "$CLONE_SOURCE_DIR/android/build/outputs/apk/release" -type f -name '*.apk' | sort | head -n 1)"
+          test -n "$apk"
+          output="$RUNNER_TEMP/xenon-mobile-${{ matrix.variant }}-slot${{ matrix.slot }}-${GITHUB_REF_NAME}-arm64.apk"
+          cp "$apk" "$output"
+          echo "CLONE_APK=$output" >> "$GITHUB_ENV"
+          echo "CLONE_VERSION_CODE=$version_code" >> "$GITHUB_ENV"
+
+      - name: Validate clone APK and write metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          aapt2="$(find "$ANDROID_HOME/build-tools" -type f -name aapt2 | sort -V | tail -n 1)"
+          apksigner="$(find "$ANDROID_HOME/build-tools" -type f -name apksigner | sort -V | tail -n 1)"
+          test -x "$aapt2"
+          test -x "$apksigner"
+          mkdir -p "$RUNNER_TEMP/metadata"
+          python3 scripts/xenon-mobile/artifact-tools.py metadata \
+            --file "$CLONE_APK" \
+            --output "$RUNNER_TEMP/metadata/${{ matrix.variant }}-apk-slot${{ matrix.slot }}.json" \
+            --artifact-id "${{ matrix.variant }}-${GITHUB_REF_NAME}-apk-slot${{ matrix.slot }}" \
+            --variant "${{ matrix.variant }}" \
+            --channel "${{ matrix.channel }}" \
+            --backend apk \
+            --slot "${{ matrix.slot }}" \
+            --version-name "$GITHUB_REF_NAME" \
+            --version-code "$CLONE_VERSION_CODE" \
+            --build "$GITHUB_RUN_NUMBER" \
+            --build-type stable \
+            --java-version 17 \
+            --mg-version android-apk \
+            --changelog "Xenon Mobile ${{ matrix.variant }} slot ${{ matrix.slot }}" \
+            --package-name "com.xenon.mobile.clone.${{ matrix.variant }}.slot${{ matrix.slot }}" \
+            --source-repo "${{ matrix.source_repo }}" \
+            --source-commit "${{ matrix.source_commit }}" \
+            --release-tag "$GITHUB_REF_NAME" \
+            --aapt2 "$aapt2" \
+            --apksigner "$apksigner"
+
+      - name: Upload clone release inputs
+        uses: actions/upload-artifact@v4
+        with:
+          name: xenon-mobile-clone-${{ matrix.variant }}-slot${{ matrix.slot }}
+          path: |
+            ${{ runner.temp }}/xenon-mobile-${{ matrix.variant }}-slot${{ matrix.slot }}-${{ github.ref_name }}-arm64.apk
+            ${{ runner.temp }}/xenon-mobile-${{ matrix.variant }}-slot${{ matrix.slot }}-${{ github.ref_name }}.patch
+            ${{ runner.temp }}/metadata/${{ matrix.variant }}-apk-slot${{ matrix.slot }}.json
+          if-no-files-found: error
+
+  jar:
+    name: Build ${{ matrix.variant }} JAR
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { variant: vanilla, source_repo: Anuken/Mindustry, source_commit: 20da6a38ab0874b5d971bffede3995efd3da5d70, channel: stable }
+          - { variant: be, source_repo: Anuken/Mindustry, source_commit: 20da6a38ab0874b5d971bffede3995efd3da5d70, channel: be }
+          - { variant: mindustryx, source_repo: TinyLake/MindustryX, source_commit: 3b894f8518c1a36ec60f1f32af50a8b249d0f060, channel: stable }
+    steps:
+      - name: Checkout Xenon Mobile
+        uses: actions/checkout@v6
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Checkout pinned Mindustry source
+        shell: bash
+        run: |
+          set -euo pipefail
+          clone_args=(--filter=blob:none)
+          if [ "${{ matrix.variant }}" = "mindustryx" ]; then
+            clone_args+=(--recurse-submodules --shallow-submodules)
+          fi
+          git clone "${clone_args[@]}" "https://github.com/${{ matrix.source_repo }}.git" game-source
+          git -C game-source fetch --depth=1 origin "${{ matrix.source_commit }}"
+          git -C game-source checkout --detach "${{ matrix.source_commit }}"
+          if [ "${{ matrix.variant }}" = "mindustryx" ]; then
+            git -C game-source submodule update --init --recursive --depth=10
+            (
+              cd game-source
+              bash scripts/applyPatches.sh
+            )
+            echo "JAR_SOURCE_DIR=game-source/work" >> "$GITHUB_ENV"
+          else
+            echo "JAR_SOURCE_DIR=game-source" >> "$GITHUB_ENV"
+          fi
+
+      - name: Build pinned desktop JAR
+        shell: bash
+        run: |
+          set -euo pipefail
+          chmod +x "$JAR_SOURCE_DIR/gradlew"
+          type=official
+          if [ "${{ matrix.variant }}" = "be" ]; then type=bleeding-edge; fi
+          (
+            cd "$JAR_SOURCE_DIR"
+            if [ "${{ matrix.variant }}" = "mindustryx" ]; then
+              ./gradlew --no-daemon :desktop:dist -Pbuildversion="$GITHUB_RUN_NUMBER" -PversionType="$type" -PversionModifier=release
+            else
+              ./gradlew --no-daemon :desktop:dist -PnoLocalArc -Pbuildversion="$GITHUB_RUN_NUMBER" -PversionType="$type" -PversionModifier=release
+            fi
+          )
+          jar_file="$JAR_SOURCE_DIR/desktop/build/libs/Mindustry.jar"
+          test -f "$jar_file"
+          output="$RUNNER_TEMP/xenon-mindustry-${{ matrix.variant }}-${GITHUB_REF_NAME}-arm64.jar"
+          cp "$jar_file" "$output"
+          mkdir -p "$RUNNER_TEMP/metadata"
+          git -C "$JAR_SOURCE_DIR" diff --binary --no-ext-diff > "$RUNNER_TEMP/xenon-mindustry-${{ matrix.variant }}-${GITHUB_REF_NAME}.patch"
+          python3 scripts/xenon-mobile/artifact-tools.py metadata \
+            --file "$output" \
+            --output "$RUNNER_TEMP/metadata/${{ matrix.variant }}-jar.json" \
+            --artifact-id "${{ matrix.variant }}-${GITHUB_REF_NAME}-jar" \
+            --variant "${{ matrix.variant }}" \
+            --channel "${{ matrix.channel }}" \
+            --backend jar \
+            --version-name "$GITHUB_REF_NAME" \
+            --build "$GITHUB_RUN_NUMBER" \
+            --build-type stable \
+            --java-version 17 \
+            --mg-version mg-v1 \
+            --changelog "Xenon Mobile ${{ matrix.variant }} JAR" \
+            --source-repo "${{ matrix.source_repo }}" \
+            --source-commit "${{ matrix.source_commit }}" \
+            --release-tag "$GITHUB_REF_NAME"
+
+      - name: Upload JAR release inputs
+        uses: actions/upload-artifact@v4
+        with:
+          name: xenon-mobile-jar-${{ matrix.variant }}
+          path: |
+            ${{ runner.temp }}/xenon-mindustry-${{ matrix.variant }}-${{ github.ref_name }}-arm64.jar
+            ${{ runner.temp }}/xenon-mindustry-${{ matrix.variant }}-${{ github.ref_name }}.patch
+            ${{ runner.temp }}/metadata/${{ matrix.variant }}-jar.json
+          if-no-files-found: error
+
+  publish:
+    name: Validate and publish release
+    needs: [hub, clone, jar]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout tag
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Download build inputs
+        uses: actions/download-artifact@v4
+        with:
+          path: release-inputs
+
+      - name: Collect release assets and metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p release-assets release-metadata
+          find release-inputs -type f \( -name '*.apk' -o -name '*.jar' -o -name '*.patch' \) -exec cp {} release-assets/ \;
+          find release-inputs -type f -name '*.json' -exec cp {} release-metadata/ \;
+          test "$(find release-assets -type f -name '*.apk' | wc -l)" -eq 11
+          test "$(find release-assets -type f -name '*.jar' | wc -l)" -eq 3
+          test "$(find release-metadata -type f -name '*.json' | wc -l)" -eq 14
+
+      - name: Copy Hub APK with stable name
+        shell: bash
+        run: |
+          set -euo pipefail
+          hub="$(find release-inputs -type f -name 'xenon-mobile-hub-*.apk' | head -n 1)"
+          test -n "$hub"
+          cp "$hub" "release-assets/xenon-mobile-hub-${GITHUB_REF_NAME}-arm64.apk"
+
+      - name: Generate current catalog
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/xenon-mobile/artifact-tools.py catalog \
+            --metadata-dir release-metadata \
+            --output release-assets/xenon-mobile-catalog.json \
+            --release-tag "$GITHUB_REF_NAME" \
+            --previous catalog/xenon-mobile-catalog.json
+          cp release-assets/xenon-mobile-catalog.json "$RUNNER_TEMP/xenon-mobile-catalog.json"
+
+      - name: Validate catalog and source lock
+        run: ./gradlew --no-daemon -PxenonMobileCatalog=release-assets/xenon-mobile-catalog.json validateXenonMobileRelease
+
+      - name: Package source, patches, lock and notices
+        shell: bash
+        run: |
+          set -euo pipefail
+          git archive --format=zip --prefix="xenon-mobile-${GITHUB_REF_NAME}/" HEAD > "release-assets/xenon-mobile-source-${GITHUB_REF_NAME}.zip"
+          cp game-source-lock.json "release-assets/xenon-mobile-game-source-lock-${GITHUB_REF_NAME}.json"
+          tmp="$RUNNER_TEMP/xenon-mobile-bundles"
+          rm -rf "$tmp"
+          mkdir -p "$tmp/patches" "$tmp/scripts" "$tmp/notices"
+          cp -R patches/client "$tmp/patches/"
+          cp -R scripts/xenon-mobile "$tmp/scripts/"
+          cp -R .github/notice "$tmp/notices/"
+          (cd "$tmp" && zip -qr "$GITHUB_WORKSPACE/release-assets/xenon-mobile-patches-${GITHUB_REF_NAME}.zip" patches)
+          (cd "$tmp" && zip -qr "$GITHUB_WORKSPACE/release-assets/xenon-mobile-native-build-scripts-${GITHUB_REF_NAME}.zip" scripts)
+          (cd "$tmp" && zip -qr "$GITHUB_WORKSPACE/release-assets/xenon-mobile-notices-${GITHUB_REF_NAME}.zip" notices)
+
+      - name: Publish catalog to main
+        shell: bash
+        env:
+          CATALOG_FILE: ${{ runner.temp }}/xenon-mobile-catalog.json
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin main
+          git switch -C xenon-mobile-catalog origin/main
+          cp "$CATALOG_FILE" catalog/xenon-mobile-catalog.json
+          git add catalog/xenon-mobile-catalog.json
+          if git diff --cached --quiet; then
+            echo "Catalog is already current"
+          else
+            git commit -m "catalog: publish ${GITHUB_REF_NAME}"
+            git push origin HEAD:main
+          fi
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: Xenon Mobile ${{ github.ref_name }}
+          generate_release_notes: true
           fail_on_unmatched_files: true
+          files: release-assets/*

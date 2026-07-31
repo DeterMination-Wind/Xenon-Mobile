@@ -31,10 +31,13 @@ import com.movtery.zalithlauncher.game.account.auth_server.data.AuthServer
 import com.movtery.zalithlauncher.game.account.auth_server.data.AuthServerDao
 import com.movtery.zalithlauncher.game.path.GamePath
 import com.movtery.zalithlauncher.game.path.GamePathDao
+import com.movtery.zalithlauncher.game.mindustry.MindustryProfileDao
+import com.movtery.zalithlauncher.game.mindustry.MindustryProfileBindingEntity
+import com.movtery.zalithlauncher.game.mindustry.MindustryProfileEntity
 
 @Database(
-    entities = [Account::class, AuthServer::class, GamePath::class],
-    version = 2,
+    entities = [Account::class, AuthServer::class, GamePath::class, MindustryProfileEntity::class, MindustryProfileBindingEntity::class],
+    version = 3,
     exportSchema = false //默认不支持导出
 )
 @TypeConverters(Converters::class)
@@ -54,6 +57,9 @@ abstract class AppDatabase : RoomDatabase() {
      */
     abstract fun gamePathDao(): GamePathDao
 
+    /** Mindustry Profile and scope-binding persistence. */
+    abstract fun mindustryProfileDao(): MindustryProfileDao
+
     companion object {
         @Volatile
         private var INSTANCE: AppDatabase? = null
@@ -61,6 +67,26 @@ abstract class AppDatabase : RoomDatabase() {
         val MIGRATION_1_2 = object : Migration(1, 2) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("ALTER TABLE accounts ADD COLUMN expiresAt INTEGER NOT NULL DEFAULT 0")
+            }
+        }
+
+        val MIGRATION_2_3 = object : Migration(2, 3) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS mindustry_profiles (" +
+                        "id TEXT NOT NULL, name TEXT NOT NULL, uuid TEXT NOT NULL, " +
+                        "createdAt INTEGER NOT NULL, updatedAt INTEGER NOT NULL, " +
+                        "PRIMARY KEY(id))"
+                )
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS mindustry_profile_bindings (" +
+                        "scopeKey TEXT NOT NULL, profileId TEXT NOT NULL, updatedAt INTEGER NOT NULL, " +
+                        "PRIMARY KEY(scopeKey))"
+                )
+                db.execSQL(
+                    "CREATE INDEX IF NOT EXISTS index_mindustry_profile_bindings_profileId " +
+                        "ON mindustry_profile_bindings(profileId)"
+                )
             }
         }
 
@@ -74,7 +100,7 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "launcher_data.db"
                 )
-                .addMigrations(MIGRATION_1_2)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
                 .build()
                 INSTANCE = instance
                 instance

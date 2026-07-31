@@ -254,135 +254,49 @@ private fun RightMenuContent(
         text: @Composable RowScope.() -> Unit
     ) -> Unit,
 ) {
-    val account by AccountsManager.currentAccountFlow.collectAsStateWithLifecycle()
-    val version by VersionsManager.currentVersion.collectAsStateWithLifecycle()
-    val isRefreshing by VersionsManager.isRefreshing.collectAsStateWithLifecycle()
-
-    ConstraintLayout(
-        modifier = modifier
+    Column(
+        modifier = modifier.padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.SpaceBetween
     ) {
-        val (accountAvatar, versionManagerLayout, launchButton) = createRefs()
-
-        AccountAvatar(
-            modifier = Modifier
-                .constrainAs(accountAvatar) {
-                    top.linkTo(parent.top)
-                    bottom.linkTo(launchButton.top, margin = 32.dp)
-                    start.linkTo(parent.start)
-                    end.linkTo(parent.end)
-                },
-            account = account,
-            onClick = toAccountManageScreen
-        )
-
-        var showList by remember { mutableStateOf(false) }
-        var versionManagerRow by remember { mutableStateOf<LayoutCoordinates?>(null) }
-        Box(
-            modifier = Modifier.constrainAs(versionManagerLayout) {
-                start.linkTo(parent.start)
-                end.linkTo(parent.end)
-                bottom.linkTo(launchButton.top)
-            },
+        Column(
+            modifier = Modifier.weight(1f),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .onGloballyPositioned { coordinates ->
-                            versionManagerRow = coordinates
-                        }
-                ) {
-                    VersionManagerLayout(
-                        isRefreshing = isRefreshing,
-                        version = version,
-                        modifier = Modifier
-                            .padding(8.dp)
-                            .fillMaxWidth(),
-                        swapToVersionManage = toVersionManageScreen,
-                        openListMenu = { showList = true },
-                    )
-                }
-                version?.takeIf { !isRefreshing && it.isValid() }?.let {
-                    IconButton(
-                        modifier = Modifier.padding(end = 8.dp),
-                        onClick = toVersionSettingsScreen
-                    ) {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_settings_filled),
-                            contentDescription = stringResource(R.string.versions_manage_settings)
-                        )
-                    }
-                }
-            }
-
-            val menuAnchor = versionManagerRow
-            val menuAnchorBounds = menuAnchor?.boundsInParent()
-            val menuAnchorX = menuAnchorBounds?.left ?: 0f
-            val menuAnchorHeight = menuAnchorBounds?.height ?: 0f
-
-            DropdownMenu(
-                expanded = showList && menuAnchor != null,
-                onDismissRequest = { showList = false },
-                modifier = Modifier.width(260.dp),
-                offset = DpOffset(
-                    x = with(LocalDensity.current) { menuAnchorX.toDp() },
-                    y = with(LocalDensity.current) { (-menuAnchorHeight).toDp() } - 8.dp
-                ),
-                shape = MaterialTheme.shapes.extraLarge
-            ) {
-                VersionsManager.versions.forEach { version0 ->
-                    DropdownMenuItem(
-                        text = {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                CommonVersionInfoLayout(
-                                    modifier = Modifier.weight(1f),
-                                    version = version0,
-                                    iconSize = 28.dp
-                                )
-                                IconButton(
-                                    onClick = {
-                                        onLaunchGame(version0)
-                                        showList = false
-                                    }
-                                ) {
-                                    Icon(
-                                        painter = painterResource(R.drawable.ic_play_arrow_filled),
-                                        contentDescription = stringResource(R.string.main_launch_game),
-                                        tint = MaterialTheme.colorScheme.primary
-                                    )
-                                }
-                            }
-                        },
-                        onClick = {
-                            if (version == version0) return@DropdownMenuItem
-                            VersionsManager.saveVersion(version0)
-                            showList = false
-                        }
-                    )
-                }
-            }
+            Icon(
+                modifier = Modifier.size(56.dp),
+                painter = painterResource(R.drawable.ic_sports_esports_filled),
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary
+            )
+            Spacer(modifier = Modifier.width(1.dp))
+            Text(
+                text = stringResource(R.string.mindustry_home_title),
+                style = MaterialTheme.typography.titleMedium
+            )
+            Text(
+                text = stringResource(R.string.mindustry_home_no_instance),
+                style = MaterialTheme.typography.bodySmall
+            )
+            Spacer(modifier = Modifier.width(1.dp))
+            Text(
+                modifier = Modifier.alpha(0.78f),
+                text = stringResource(R.string.mindustry_home_open_hub),
+                style = MaterialTheme.typography.labelSmall
+            )
         }
 
-        launchButton(
-            Modifier
+        ScalingActionButton(
+            enabled = false,
+            modifier = Modifier
                 .fillMaxWidth()
-                .constrainAs(launchButton) {
-                    bottom.linkTo(parent.bottom, margin = 8.dp)
-                }
-                .padding(PaddingValues(horizontal = 12.dp)),
-            {
-                onLaunchGame(null)
-            },
-            {
-                MarqueeText(text = stringResource(R.string.main_launch_game))
-            }
-        )
+                .padding(horizontal = 12.dp),
+            elevation = ButtonDefaults.buttonElevation(defaultElevation = 1.dp),
+            onClick = {}
+        ) {
+            MarqueeText(text = stringResource(R.string.mindustry_action_launch))
+        }
     }
 }
 

@@ -4,8 +4,8 @@
   "channels": ["stable", "be", "dev"],
   "mirrors": [
     {
-      "id": "121.199.60.4",
-      "baseUrl": "http://121.199.60.4/github",
+      "id": "mindustry.men",
+      "baseUrl": "https://mindustry.men/github",
       "priority": 0
     }
   ],

@@ -115,7 +115,8 @@ class SplashActivity : BaseAppCompatActivity(refreshData = false) {
     }
 
     private fun initUnpackItems() {
-        Components.entries.forEach { component ->
+        val visibleComponents = setOf(Components.LWJGL3, Components.LAUNCHER)
+        Components.entries.filter { it in visibleComponents }.forEach { component ->
             val task = UnpackComponentsTask(this@SplashActivity, component)
             if (!task.isCheckFailed()) {
                 unpackItems.add(
@@ -215,7 +216,7 @@ class SplashActivity : BaseAppCompatActivity(refreshData = false) {
         }.invokeOnCompletion {
             AllSettings.javaRuntime.apply {
                 //检查并设置默认的Java环境
-                if (getValue().isEmpty()) save(Jre.JRE_8.jreName)
+                if (getValue().isEmpty()) save(Jre.JRE_17.jreName)
             }
             swapToMain()
         }

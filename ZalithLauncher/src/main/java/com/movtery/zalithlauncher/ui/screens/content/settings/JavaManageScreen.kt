@@ -18,10 +18,8 @@
 
 package com.movtery.zalithlauncher.ui.screens.content.settings
 
-import android.app.Activity
 import android.content.Context
 import android.net.Uri
-import android.widget.Toast
 import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -58,11 +56,9 @@ import com.movtery.zalithlauncher.ZLApplication
 import com.movtery.zalithlauncher.context.getFileName
 import com.movtery.zalithlauncher.coroutine.Task
 import com.movtery.zalithlauncher.coroutine.TaskSystem
-import com.movtery.zalithlauncher.game.launch.executeJarWithUri
 import com.movtery.zalithlauncher.game.multirt.Runtime
 import com.movtery.zalithlauncher.game.multirt.RuntimesManager
 import com.movtery.zalithlauncher.path.PathManager
-import com.movtery.zalithlauncher.setting.AllSettings
 import com.movtery.zalithlauncher.ui.base.BaseScreen
 import com.movtery.zalithlauncher.ui.components.CardTitleLayout
 import com.movtery.zalithlauncher.ui.components.IconTextButton
@@ -71,7 +67,6 @@ import com.movtery.zalithlauncher.ui.screens.NestedNavKey
 import com.movtery.zalithlauncher.ui.screens.NormalNavKey
 import com.movtery.zalithlauncher.ui.screens.TitledNavKey
 import com.movtery.zalithlauncher.ui.screens.content.elements.ImportMultipleFileButton
-import com.movtery.zalithlauncher.ui.screens.content.elements.ImportSingleFileButton
 import com.movtery.zalithlauncher.ui.screens.content.settings.layouts.CardPosition
 import com.movtery.zalithlauncher.ui.screens.content.settings.layouts.SettingsCard
 import com.movtery.zalithlauncher.ui.theme.itemColor
@@ -150,23 +145,6 @@ fun JavaManageScreen(
                                 )
                             }
                         }
-                    )
-                    ImportSingleFileButton(
-                        extension = "jar",
-                        progressUris = { uris ->
-                            uris[0].let { uri ->
-                                RuntimesManager.getExactJreName(8) ?: run {
-                                    Toast.makeText(context, R.string.multirt_no_java_8, Toast.LENGTH_LONG).show()
-                                    return@ImportSingleFileButton
-                                }
-                                (context as? Activity)?.let { activity ->
-                                    val jreName = AllSettings.javaRuntime.takeIf { AllSettings.autoPickJavaRuntime.getValue() }?.getValue()
-                                    executeJarWithUri(activity, uri, jreName)
-                                }
-                            }
-                        },
-                        painter = painterResource(R.drawable.ic_terminal_outlined),
-                        text = stringResource(R.string.execute_jar_title)
                     )
                 }
             }

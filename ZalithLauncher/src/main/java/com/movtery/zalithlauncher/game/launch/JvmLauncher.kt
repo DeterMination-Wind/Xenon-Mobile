@@ -53,7 +53,9 @@ open class JvmLauncher(
     }
 
     override suspend fun launch(screenSize: IntSize): Int {
-        generateLauncherProfiles(jvmLaunchInfo.userHome)
+        if (jvmLaunchInfo.generateMinecraftProfile) {
+            generateLauncherProfiles(jvmLaunchInfo.userHome)
+        }
         val (runtime, argList) = getStartupNeeded(screenSize)
 
         this.runtime = runtime

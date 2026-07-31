@@ -79,6 +79,12 @@ import com.movtery.zalithlauncher.game.launch.handler.GameHandler
 import com.movtery.zalithlauncher.game.launch.handler.HandlerType
 import com.movtery.zalithlauncher.game.launch.handler.JVMHandler
 import com.movtery.zalithlauncher.game.multirt.RuntimesManager
+import com.movtery.zalithlauncher.game.mindustry.MindustryBridgeContract
+import com.movtery.zalithlauncher.game.mindustry.MindustryBridgeRuntime
+import com.movtery.zalithlauncher.game.mindustry.MindustryInstance
+import com.movtery.zalithlauncher.game.mindustry.MindustryLaunchOptions
+import com.movtery.zalithlauncher.game.mindustry.MindustryPaths
+import com.movtery.zalithlauncher.game.mindustry.MindustryRuntimeCoordinator
 import com.movtery.zalithlauncher.game.version.installed.Version
 import com.movtery.zalithlauncher.setting.AllSettings
 import com.movtery.zalithlauncher.terracotta.TerracottaVPNService
@@ -110,9 +116,9 @@ import android.graphics.Color as NativeColor
 
 
 private const val INTENT_RUN_GAME = "BUNDLE_RUN_GAME"
-private const val INTENT_RUN_JAR = "INTENT_RUN_JAR"
+internal const val INTENT_RUN_JAR = "INTENT_RUN_JAR"
 private const val INTENT_VERSION = "INTENT_VERSION"
-private const val INTENT_JAR_INFO = "INTENT_JAR_INFO"
+internal const val INTENT_JAR_INFO = "INTENT_JAR_INFO"
 
 data class LaunchSession(
     val launcher: Launcher,
@@ -320,6 +326,8 @@ class VMActivity : BaseAppCompatActivity(), SurfaceTextureListener, SurfaceHolde
 
     private val vmViewModel: VMViewModel by viewModels()
 
+    private var bridgeInstanceId: String? = null
+
     private var applySizeToSurface: ((width: Int, height: Int) -> Unit)? = null
 
     private inline fun <T> withHandler(block: AbstractHandler.() -> T): T {
@@ -339,6 +347,15 @@ class VMActivity : BaseAppCompatActivity(), SurfaceTextureListener, SurfaceHolde
         startForegroundService(Intent(this, GameService::class.java))
 
         val bundle = intent.extras ?: throw IllegalStateException("Unknown VM launch state!")
+        bridgeInstanceId = bundle.getString(MindustryBridgeContract.EXTRA_INSTANCE_ID)
+            ?.takeIf { it.isNotBlank() }
+            ?.also { instanceId ->
+                MindustryBridgeRuntime.register(instanceId) {
+                    runOnUiThread {
+                        if (!isFinishing) finish()
+                    }
+                }
+            }
 
         vmViewModel.initSession(
             activity = this,
@@ -544,6 +561,10 @@ class VMActivity : BaseAppCompatActivity(), SurfaceTextureListener, SurfaceHolde
     override fun onDestroy() {
         stopAllService()
         withHandler { onDestroy() }
+        bridgeInstanceId?.let { instanceId ->
+            MindustryBridgeRuntime.clear(instanceId)
+            MindustryRuntimeCoordinator.release(instanceId)
+        }
         super.onDestroy()
     }
 
@@ -775,4 +796,46 @@ fun runJar(
         putExtra(INTENT_JAR_INFO, jvmLaunchInfo)
     }
     context.startActivity(intent)
+}
+
+/** Builds the standard VMActivity intent for one launcher-managed Mindustry JAR instance. */
+fun createMindustryJarIntent(
+    context: Context,
+    instance: MindustryInstance,
+    paths: MindustryPaths,
+    joinHost: String? = null,
+    joinPort: Int = 6567
+): Intent {
+    val jar = instance.resolveJar(paths)
+    require(jar.isFile) { "Mindustry JAR does not exist: ${jar.absolutePath}" }
+    val dataDir = instance.resolveDataDir(paths).apply { mkdirs() }
+    val args = buildList {
+        add("-Dfile.encoding=UTF-8")
+        add("-Dmindustry.data.dir=${dataDir.absolutePath}")
+        addAll(MindustryLaunchOptions.sanitizeJvmArgs(instance.jvmArgs))
+        add("-jar")
+        add(jar.absolutePath)
+        addAll(instance.gameArgs)
+    }
+    return Intent(context, VMActivity::class.java).apply {
+        if (context !is android.app.Activity) addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        putExtra(INTENT_RUN_JAR, true)
+        putExtra(INTENT_JAR_INFO, JvmLaunchInfo(
+            jvmArgs = args.joinToString(" ", transform = ::quoteJvmArgument),
+            jreName = instance.javaRuntime,
+            userHome = dataDir.absolutePath,
+            useUserJvm = false,
+            generateMinecraftProfile = false
+        ))
+        putExtra(MindustryBridgeContract.EXTRA_INSTANCE_ID, instance.id)
+        joinHost?.let {
+            putExtra(MindustryBridgeContract.EXTRA_HOST, it)
+            putExtra(MindustryBridgeContract.EXTRA_PORT, joinPort)
+        }
+    }
+}
+
+private fun quoteJvmArgument(value: String): String {
+    if (value.isNotEmpty() && value.none { it.isWhitespace() || it == '"' }) return value
+    return "\"${value.replace("\\", "\\\\").replace("\"", "\\\"")}\""
 }

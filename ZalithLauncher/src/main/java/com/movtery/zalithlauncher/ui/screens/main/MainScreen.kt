@@ -93,6 +93,7 @@ import com.movtery.zalithlauncher.ui.screens.content.HomePageEditorScreen
 import com.movtery.zalithlauncher.ui.screens.content.LauncherScreen
 import com.movtery.zalithlauncher.ui.screens.content.LicenseScreen
 import com.movtery.zalithlauncher.ui.screens.content.LogViewScreen
+import com.movtery.zalithlauncher.ui.screens.content.MindustryHubScreen
 import com.movtery.zalithlauncher.ui.screens.content.MultiplayerScreen
 import com.movtery.zalithlauncher.ui.screens.content.SettingsScreen
 import com.movtery.zalithlauncher.ui.screens.content.VersionExportScreen
@@ -189,10 +190,10 @@ fun MainScreen(
                 toDownloadScreen = {
                     screenBackStackModel.navigateToDownload()
                 },
-                toMultiplayerScreen = {
+                toMindustryHubScreen = {
                     screenBackStackModel.mainScreen.removeAndNavigateTo(
                         removes = screenBackStackModel.clearBeforeNavKeys,
-                        screenKey = NormalNavKey.Multiplayer
+                        screenKey = NormalNavKey.MindustryHub
                     )
                 },
                 changeExpandedState = {
@@ -242,12 +243,12 @@ private fun <E: TitledNavKey> TopBar(
     toMainScreen: () -> Unit,
     toSettingsScreen: () -> Unit,
     toDownloadScreen: () -> Unit,
-    toMultiplayerScreen: () -> Unit,
+    toMindustryHubScreen: () -> Unit,
     changeExpandedState: () -> Unit,
 ) {
     val festivals = LocalFestivals.current
 
-    val inMultiplayerScreen = mainScreenKey is NormalNavKey.Multiplayer
+    val inMindustryHubScreen = mainScreenKey is NormalNavKey.MindustryHub
     val inDownloadScreen = mainScreenKey is NestedNavKey.Download
     val inSettingsScreen = mainScreenKey is NestedNavKey.Settings
 
@@ -389,11 +390,11 @@ private fun <E: TitledNavKey> TopBar(
                 }
 
                 TopBarRailItem(
-                    selected = inMultiplayerScreen,
-                    painter = painterResource(R.drawable.ic_group_filled),
-                    text = stringResource(R.string.terracotta),
+                    selected = inMindustryHubScreen,
+                    painter = painterResource(R.drawable.ic_dashboard_filled),
+                    text = stringResource(R.string.mindustry_hub_title),
                     onClick = {
-                        if (!inMultiplayerScreen) toMultiplayerScreen()
+                        if (!inMindustryHubScreen) toMindustryHubScreen()
                     },
                 )
 
@@ -555,6 +556,12 @@ private fun NavigationUI(
                         navigateToExport = navigateToExport,
                         eventViewModel = eventViewModel,
                         submitError = submitError
+                    )
+                }
+                entry<NormalNavKey.MindustryHub> {
+                    MindustryHubScreen(
+                        backStackViewModel = screenBackStackModel,
+                        eventViewModel = eventViewModel
                     )
                 }
                 entry<NormalNavKey.FileSelector> { key ->

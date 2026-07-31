@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "defaults": {
+    "vanilla": {
+      "sourceRepo": "Anuken/Mindustry",
+      "sourceCommit": "20da6a38ab0874b5d971bffede3995efd3da5d70",
+      "patchSeries": []
+    },
+    "be": {
+      "sourceRepo": "Anuken/Mindustry",
+      "sourceCommit": "20da6a38ab0874b5d971bffede3995efd3da5d70",
+      "patchSeries": []
+    },
+    "mindustryx": {
+      "sourceRepo": "TinyLake/MindustryX",
+      "sourceCommit": "3b894f8518c1a36ec60f1f32af50a8b249d0f060",
+      "patchSeries": []
+    }
+  },
+  "slots": {},
+  "fixtures": {
+    "serverList": {
+      "sourceRepo": "Anuken/MindustryServerList",
+      "sourceCommit": "f297264dc24621753bc008a18e17b582fa5e3f65",
+      "patchSeries": []
+    }
+  }
+}

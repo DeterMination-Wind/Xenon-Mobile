@@ -8,10 +8,6 @@ HERE_PATH := $(LOCAL_PATH)
 
 LOCAL_PATH := $(HERE_PATH)
 
-$(call import-module,prefab/bytehook)
-LOCAL_PATH := $(HERE_PATH)
-
-
 include $(CLEAR_VARS)
 LOCAL_LDLIBS := -ldl -llog -landroid
 LOCAL_MODULE := pojavexec
@@ -58,7 +54,8 @@ endif
 include $(CLEAR_VARS)
 LOCAL_MODULE := exithook
 LOCAL_LDLIBS := -ldl -llog
-LOCAL_SHARED_LIBRARIES := bytehook pojavexec
+LOCAL_SHARED_LIBRARIES := pojavexec
+LOCAL_C_INCLUDES += $(HERE_PATH)/third_party/bytehook
 LOCAL_SRC_FILES := exit_hook.c
 include $(BUILD_SHARED_LIBRARY)
 
@@ -106,8 +103,4 @@ LOCAL_EXPORT_C_INCLUDES := $(LOCAL_PATH)
 LOCAL_SHARED_LIBRARIES := awt_headless
 LOCAL_SRC_FILES := xawt_fake.c
 include $(BUILD_SHARED_LIBRARY)
-
-
-# delete fake libs after linked
-$(info $(shell (rm $(HERE_PATH)/../jniLibs/*/libawt_headless.so)))
 

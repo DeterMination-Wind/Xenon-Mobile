@@ -33,4 +33,5 @@ data class JvmLaunchInfo(
     val jreName: String? = null,
     val userHome: String? = null,
     val useUserJvm: Boolean = true,
+    val generateMinecraftProfile: Boolean = true,
 ) : Parcelable

@@ -2,6 +2,7 @@ import com.android.build.api.variant.FilterConfiguration.FilterType.ABI
 import com.android.build.api.variant.impl.VariantOutputImpl
 import com.android.build.gradle.tasks.MergeSourceSetFolders
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.gradle.api.tasks.testing.Test
 
 plugins {
     alias(libs.plugins.android.application)
@@ -13,7 +14,8 @@ plugins {
     id("com.movtery.buildkeys")
 }
 
-val zalithPackageName = "com.movtery.zalithlauncher"
+val zalithNamespace = "com.movtery.zalithlauncher"
+val xenonMobilePackageName = "com.xenon.mobile"
 val launcherAPPName = project.findProperty("launcher_app_name") as? String ?: error("The \"launcher_app_name\" property is not set in gradle.properties.")
 val launcherName = project.findProperty("launcher_name") as? String ?: error("The \"launcher_name\" property is not set in gradle.properties.")
 val launcherShortName = project.findProperty("launcher_short_name") as? String ?: error("The \"launcher_short_name\" property is not set in gradle.properties.")
@@ -23,45 +25,66 @@ val launcherVersionCode = (project.findProperty("launcher_version_code") as? Str
 val launcherVersionName = project.findProperty("launcher_version_name") as? String ?: error("The \"launcher_version_name\" property is not set in gradle.properties.")
 
 val defaultOAuthClientID = project.findProperty("oauth_client_id") as? String
-val defaultStorePassword = project.findProperty("default_store_password") as? String ?: error("The \"default_store_password\" property is not set in gradle.properties.")
-val defaultKeyPassword = project.findProperty("default_key_password") as? String ?: error("The \"default_key_password\" property is not set in gradle.properties.")
+val defaultStorePassword = getKeyFromLocal("DEBUG_STORE_PASSWORD", ".store_password.txt").trim()
+val defaultKeyPassword = getKeyFromLocal("DEBUG_KEY_PASSWORD", ".key_password.txt").trim()
 val defaultCurseForgeApiKey = project.findProperty("curseforge_api_key") as? String
+val releaseStorePassword = getKeyFromLocal("STORE_PASSWORD", ".store_password.txt").trim()
+val releaseKeyPassword = getKeyFromLocal("KEY_PASSWORD", ".key_password.txt").trim()
+val debugKeystoreFile = getFileFromLocal("DEBUG_KEYSTORE_PATH", "ZalithLauncher/zalith_launcher_debug.jks")
+val releaseKeystoreFile = getFileFromLocal("RELEASE_KEYSTORE_PATH", "ZalithLauncher/zalith_launcher.jks")
+val debugKeyAlias = System.getenv("DEBUG_KEY_ALIAS")?.trim().orEmpty().ifBlank { "movtery_zalith_debug" }
+val releaseKeyAlias = System.getenv("RELEASE_KEY_ALIAS")?.trim().orEmpty().ifBlank { "movtery_zalith" }
 
-val projectArch: String = System.getProperty("arch", "all")
+val projectArch: String = System.getProperty("arch", "arm64")
+
+fun abiForArch(arch: String): String? = when (arch) {
+    "all" -> null
+    "arm" -> "armeabi-v7a"
+    "arm64" -> "arm64-v8a"
+    "x86" -> "x86"
+    "x86_64" -> "x86_64"
+    else -> error("Unsupported arch '$arch'. Expected one of: all, arm, arm64, x86, x86_64.")
+}
 
 fun getKeyFromLocal(envKey: String, fileName: String? = null, default: String? = null): String {
     val key = System.getenv(envKey)
     return key ?: fileName?.let {
         val file = File(rootDir, fileName)
-        if (file.canRead() && file.isFile) file.readText() else null
+        if (file.canRead() && file.isFile) file.readText().trim() else null
     } ?: default ?: run {
         logger.warn("BUILD: $envKey not set; related features may throw exceptions.")
         ""
     }
 }
 
+fun getFileFromLocal(envKey: String, defaultFileName: String): File {
+    val configured = System.getenv(envKey)?.trim().orEmpty()
+    if (configured.isBlank()) return File(rootDir, defaultFileName)
+    val file = File(configured)
+    return if (file.isAbsolute) file else File(rootDir, configured)
+}
+
 android {
-    namespace = zalithPackageName
+    namespace = zalithNamespace
     compileSdk = 37
 
     signingConfigs {
         create("releaseBuild") {
-            storeFile = file("zalith_launcher.jks")
-            storePassword = getKeyFromLocal("STORE_PASSWORD", ".store_password.txt")
-            keyAlias = "movtery_zalith"
-            keyPassword = getKeyFromLocal("KEY_PASSWORD", ".key_password.txt")
+            storeFile = releaseKeystoreFile
+            storePassword = releaseStorePassword
+            keyAlias = releaseKeyAlias
+            keyPassword = releaseKeyPassword
         }
         create("debugBuild") {
-            storeFile = file("zalith_launcher_debug.jks")
+            storeFile = debugKeystoreFile
             storePassword = defaultStorePassword
-            keyAlias = "movtery_zalith_debug"
+            keyAlias = debugKeyAlias
             keyPassword = defaultKeyPassword
         }
     }
 
     defaultConfig {
-        applicationId = zalithPackageName
-        applicationIdSuffix = ".v2"
+        applicationId = xenonMobilePackageName
         minSdk = 26
         targetSdk = 35
         versionCode = launcherVersionCode
@@ -88,16 +111,11 @@ android {
     }
 
     splits {
-        val arch = projectArch.takeIf { it != "all" } ?: return@splits
+        val abiFilter = abiForArch(projectArch) ?: return@splits
         abi {
             isEnable = true
             reset()
-            when (arch) {
-                "arm" -> include("armeabi-v7a")
-                "arm64" -> include("arm64-v8a")
-                "x86" -> include("x86")
-                "x86_64" -> include("x86_64")
-            }
+            include(abiFilter)
         }
     }
 
@@ -123,13 +141,18 @@ android {
     buildFeatures {
         compose = true
         buildConfig = true
-        prefab = true
+        prefab = false
     }
     testOptions {
         unitTests {
             isIncludeAndroidResources = true
         }
     }
+
+}
+
+tasks.withType<Test>().configureEach {
+    maxParallelForks = 1
 }
 
 androidComponents {

@@ -1,5 +1,11 @@
 *.iml
 .gradle
+/.gradle-user-home/
+/.gradle-user-home-local/
+/.gradle-tmp/
+/.gradle-y/
+/.gradle-y2/
+/.android-sdk/
 .idea
 .kotlin
 /local.properties
@@ -13,3 +19,5 @@ local.properties
 .store_password.txt
 .key_password.txt
 .curseforge_api.txt
+ZalithLauncher/*.jks
+/scripts/xenon-mobile/__pycache__/

@@ -41,28 +41,23 @@ import androidx.lifecycle.viewModelScope
 import com.movtery.zalithlauncher.BuildConfig
 import com.movtery.zalithlauncher.R
 import com.movtery.zalithlauncher.path.GLOBAL_CLIENT
-import com.movtery.zalithlauncher.path.GLOBAL_JSON
-import com.movtery.zalithlauncher.path.URL_PROJECT_INFO
 import com.movtery.zalithlauncher.setting.AllSettings
 import com.movtery.zalithlauncher.ui.components.MarqueeText
 import com.movtery.zalithlauncher.ui.components.SimpleListDialog
 import com.movtery.zalithlauncher.ui.screens.content.elements.DisabledAlpha
 import com.movtery.zalithlauncher.ui.upgrade.UpgradeDialog
 import com.movtery.zalithlauncher.ui.upgrade.UpgradeFilesDialog
-import com.movtery.zalithlauncher.upgrade.GithubContentApi
 import com.movtery.zalithlauncher.upgrade.RemoteData
 import com.movtery.zalithlauncher.upgrade.TooFrequentOperationException
 import com.movtery.zalithlauncher.utils.logging.Logger
 import com.movtery.zalithlauncher.utils.network.safeBodyAsJson
 import com.movtery.zalithlauncher.utils.network.withRetry
-import com.movtery.zalithlauncher.utils.string.decodeBase64
 import io.ktor.client.request.get
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
-import java.util.Locale
 import java.util.concurrent.TimeUnit
 
 private const val TAG = "LauncherUpgradeVM"
@@ -80,9 +75,23 @@ sealed interface LauncherUpgradeOperation {
 /**
  * 最新版本的信息获取源
  */
-private const val LATEST_VERSION = "latest_version_md.json"
-private const val LATEST_API_URL = "$URL_PROJECT_INFO/$LATEST_VERSION"
-private const val LATEST_API_CHINESE_URL = "https://repo.miawa.cn/zalith-info/v2/$LATEST_VERSION"
+private const val LATEST_API_URL =
+    "https://api.github.com/repos/DeterMination-Wind/Xenon-Mobile/releases/latest"
+
+@kotlinx.serialization.Serializable
+private data class GithubRelease(
+    @kotlinx.serialization.SerialName("tag_name") val tagName: String,
+    val body: String? = null,
+    @kotlinx.serialization.SerialName("published_at") val publishedAt: String? = null,
+    val assets: List<GithubReleaseAsset> = emptyList()
+)
+
+@kotlinx.serialization.Serializable
+private data class GithubReleaseAsset(
+    val name: String,
+    @kotlinx.serialization.SerialName("browser_download_url") val downloadUrl: String,
+    val size: Long = 0L
+)
 
 /**
  * 用于记录启动器更新 ViewModel
@@ -193,30 +202,49 @@ class LauncherUpgradeViewModel: ViewModel() {
         return withContext(Dispatchers.IO) {
             runCatching {
                 withRetry(logTag = "LauncherUpgrade", maxRetries = 2) {
-                    //获取最新的启动器信息
-                    val api = GLOBAL_CLIENT.get(LATEST_API_URL).safeBodyAsJson<GithubContentApi>()
-                    //需要Base64解密
-                    val contentString = decodeBase64(api.content)
-                    GLOBAL_JSON.decodeFromString(RemoteData.serializer(), contentString)
+                    GLOBAL_CLIENT.get(LATEST_API_URL)
+                        .safeBodyAsJson<GithubRelease>()
+                        .toRemoteData()
                 }
-            }.getOrElse { e ->
-                if (Locale.getDefault().language == "zh") {
-                    runCatching {
-                        Logger.info(TAG, "Check for updates in the Chinese region.")
-                        //在中国地区，可能因为无法访问 Github API 导致获取更新信息失败
-                        withRetry(logTag = "LauncherUpgrade_Chinese", maxRetries = 2) {
-                            GLOBAL_CLIENT.get(LATEST_API_CHINESE_URL).safeBodyAsJson<RemoteData>()
-                        }
-                    }.getOrElse { e ->
-                        Logger.warning(TAG, "Failed to check for launcher upgrade!", e)
-                        null
-                    }
-                } else {
-                    Logger.warning(TAG, "Failed to check for launcher upgrade!", e)
-                    null
-                }
+            }.getOrElse { error ->
+                Logger.warning(TAG, "Failed to check for Xenon Mobile upgrade!", error)
+                null
             }
         }
+    }
+
+    private fun GithubRelease.toRemoteData(): RemoteData? {
+        val code = Regex("(?im)\\bversionCode\\s*[:=]\\s*(\\d+)")
+            .find(body.orEmpty())
+            ?.groupValues
+            ?.getOrNull(1)
+            ?.toIntOrNull()
+            ?: return null.also {
+                Logger.warning(TAG, "Release $tagName has no numeric versionCode metadata")
+            }
+        val files = assets.mapNotNull { asset ->
+            if (!asset.name.endsWith(".apk", ignoreCase = true) ||
+                !asset.downloadUrl.startsWith("https://")
+            ) return@mapNotNull null
+            val arch = when {
+                asset.name.contains("arm64", true) -> RemoteData.RemoteFile.Arch.ARM64
+                asset.name.contains("armeabi-v7a", true) || asset.name.contains("-arm.", true) -> RemoteData.RemoteFile.Arch.ARM
+                asset.name.contains("x86_64", true) -> RemoteData.RemoteFile.Arch.X86_64
+                asset.name.contains("x86", true) -> RemoteData.RemoteFile.Arch.X86
+                else -> RemoteData.RemoteFile.Arch.ALL
+            }
+            RemoteData.RemoteFile(asset.name, asset.downloadUrl, arch, asset.size)
+        }
+        if (files.isEmpty()) return null
+        val markdown = body.orEmpty()
+        return RemoteData(
+            code = code,
+            version = tagName.removePrefix("v"),
+            createdAt = publishedAt.orEmpty(),
+            files = files,
+            defaultBody = RemoteData.RemoteBody("en", markdown),
+            bodies = listOf(RemoteData.RemoteBody("en", markdown))
+        )
     }
 
     /**

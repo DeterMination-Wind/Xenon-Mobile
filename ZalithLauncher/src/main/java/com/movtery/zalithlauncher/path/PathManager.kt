@@ -53,12 +53,18 @@ class PathManager {
         lateinit var DIR_CONTROL_LAYOUTS: File
         lateinit var DIR_TERRACOTTA: File
         lateinit var DIR_STYLES: File
+        lateinit var DIR_MINDUSTRY: File
+        lateinit var DIR_MINDUSTRY_INSTANCES: File
+        lateinit var DIR_MINDUSTRY_GLOBAL_DATA: File
+        lateinit var DIR_MINDUSTRY_CATALOG_CACHE: File
+        lateinit var DIR_MINDUSTRY_CLONES: File
 
         lateinit var FILE_CRASH_REPORT: File
         lateinit var FILE_SETTINGS: File
         lateinit var FILE_MINECRAFT_VERSIONS: File
         lateinit var FILE_LAUNCHER_BACKGROUND: File
         lateinit var FILE_TERRACOTTA_LOG: File
+        lateinit var FILE_MINDUSTRY_CATALOG: File
 
         fun refreshPaths(context: Context) {
             DIR_FILES_PRIVATE = context.filesDir
@@ -91,12 +97,18 @@ class PathManager {
             DIR_CONTROL_LAYOUTS = File(DIR_FILES_EXTERNAL, "control_layouts")
             DIR_TERRACOTTA = File(DIR_FILES_PRIVATE, "net.burningtnt.terracotta")
             DIR_STYLES = File(DIR_FILES_PRIVATE, "special_styles")
+            DIR_MINDUSTRY = File(DIR_FILES_EXTERNAL, "mindustry")
+            DIR_MINDUSTRY_INSTANCES = File(DIR_MINDUSTRY, "instances")
+            DIR_MINDUSTRY_GLOBAL_DATA = File(DIR_MINDUSTRY, "global-data")
+            DIR_MINDUSTRY_CATALOG_CACHE = File(DIR_MINDUSTRY, "catalog")
+            DIR_MINDUSTRY_CLONES = File(DIR_MINDUSTRY, "clones")
 
             FILE_CRASH_REPORT = File(DIR_LAUNCHER_LOGS, "launcher_crash.log")
             FILE_SETTINGS = File(DIR_FILES_PRIVATE, "settings.json")
             FILE_MINECRAFT_VERSIONS = File(DIR_GAME, "minecraft_versions.json")
             FILE_LAUNCHER_BACKGROUND = File(DIR_BACKGROUND, "background01.file")
             FILE_TERRACOTTA_LOG = File(DIR_FILES_EXTERNAL, "terracotta.log")
+            FILE_MINDUSTRY_CATALOG = File(DIR_MINDUSTRY_CATALOG_CACHE, "catalog.json")
 
             createDirs()
             handleLegacy()
@@ -124,6 +136,11 @@ class PathManager {
             DIR_CONTROL_LAYOUTS.mkdirs()
             DIR_TERRACOTTA.mkdirs()
             DIR_STYLES.mkdirs()
+            DIR_MINDUSTRY.mkdirs()
+            DIR_MINDUSTRY_INSTANCES.mkdirs()
+            DIR_MINDUSTRY_GLOBAL_DATA.mkdirs()
+            DIR_MINDUSTRY_CATALOG_CACHE.mkdirs()
+            DIR_MINDUSTRY_CLONES.mkdirs()
         }
 
         /**

@@ -47,6 +47,7 @@ class ScreenBackStackViewModel : ViewModel() {
     init {
         mainScreen.backStack.addIfEmpty(NormalNavKey.LauncherMain)
         settingsScreen.backStack.addIfEmpty(NormalNavKey.Settings.Renderer)
+        downloadScreen.backStack.addIfEmpty(NormalNavKey.MindustryDownloads)
         //下载嵌套子屏幕
         downloadGameScreen.backStack.addIfEmpty(NormalNavKey.DownloadGame.SelectGameVersion)
         downloadModPackScreen.backStack.addIfEmpty(NormalNavKey.SearchModPack)
@@ -63,6 +64,7 @@ class ScreenBackStackViewModel : ViewModel() {
     val clearBeforeNavKeys = listOf(
         settingsScreen::class,
         downloadScreen::class,
+        NormalNavKey.MindustryHub::class,
         NormalNavKey.Multiplayer::class
     )
 }

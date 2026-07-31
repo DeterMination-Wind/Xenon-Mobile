@@ -12,6 +12,10 @@ on:
         required: false
       STORE_PASSWORD:
         required: false
+      SIGNING_KEYSTORE_BASE64:
+        required: false
+      RELEASE_KEY_ALIAS:
+        required: false
       OAUTH_CLIENT_ID:
         required: false
       CURSEFORGE_API_KEY:
@@ -29,6 +33,8 @@ jobs:
     env:
       KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
       STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
+      SIGNING_KEYSTORE_BASE64: ${{ secrets.SIGNING_KEYSTORE_BASE64 }}
+      RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
       OAUTH_CLIENT_ID: ${{ secrets.OAUTH_CLIENT_ID }}
       CURSEFORGE_API_KEY: ${{ secrets.CURSEFORGE_API_KEY }}
 
@@ -43,6 +49,39 @@ jobs:
         with:
           distribution: "temurin"
           java-version: "17"
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android build tools
+        run: |
+          yes | sdkmanager --licenses >/dev/null || true
+          sdkmanager "platforms;android-37" "build-tools;36.0.0" "ndk;25.2.9519653"
+
+      - name: Prepare signing configuration
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "${{ inputs.variant }}" = "Release" ]; then
+            test -n "${SIGNING_KEYSTORE_BASE64:-}" || { echo "SIGNING_KEYSTORE_BASE64 is required for Release" >&2; exit 1; }
+            test -n "${STORE_PASSWORD:-}" || { echo "STORE_PASSWORD is required for Release" >&2; exit 1; }
+            test -n "${KEY_PASSWORD:-}" || { echo "KEY_PASSWORD is required for Release" >&2; exit 1; }
+            key="$RUNNER_TEMP/xenon-release.jks"
+            printf '%s' "$SIGNING_KEYSTORE_BASE64" | base64 --decode > "$key"
+            echo "RELEASE_KEYSTORE_PATH=$key" >> "$GITHUB_ENV"
+          else
+            key="$RUNNER_TEMP/xenon-debug.jks"
+            password="xenon-ci-debug"
+            keytool -genkeypair -noprompt \
+              -keystore "$key" -storetype JKS \
+              -storepass "$password" -keypass "$password" \
+              -alias xenon_ci_debug -keyalg RSA -keysize 2048 \
+              -validity 3650 -dname "CN=Xenon Mobile CI Debug"
+            echo "DEBUG_KEYSTORE_PATH=$key" >> "$GITHUB_ENV"
+            echo "DEBUG_STORE_PASSWORD=$password" >> "$GITHUB_ENV"
+            echo "DEBUG_KEY_PASSWORD=$password" >> "$GITHUB_ENV"
+            echo "DEBUG_KEY_ALIAS=xenon_ci_debug" >> "$GITHUB_ENV"
+          fi
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v5

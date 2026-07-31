@@ -37,6 +37,14 @@ sealed interface NormalNavKey : TitledNavKey {
     @Serializable data object UnpackDeps: NormalNavKey
     /** 启动器主页屏幕 */
     @Serializable data object LauncherMain : NormalNavKey
+    /** Mindustry Hub screen */
+    @Serializable data object MindustryHub : NormalNavKey {
+        override val title: Int = R.string.mindustry_hub_title
+    }
+    /** Mindustry download screen */
+    @Serializable data object MindustryDownloads : NormalNavKey {
+        override val title: Int = R.string.mindustry_download_title
+    }
     /** 账号管理屏幕 */
     @Serializable data class AccountManager(
         val loginMenu: FirstLoginMenu = FirstLoginMenu.NONE
