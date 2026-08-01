@@ -98,8 +98,11 @@ tasks.register("validateXenonMobileCatalog") {
             }
             if (!keys.add(key)) throw GradleException("Duplicate catalog identity key: $key")
             val urls = artifact["urls"] as? List<*> ?: throw GradleException("Artifact $id has no urls")
-            if (urls.isEmpty() || urls.any { !it.toString().startsWith("https://") }) {
-                throw GradleException("Artifact $id must use canonical HTTPS URLs")
+            if (urls.isEmpty() || urls.any {
+                    val url = it.toString()
+                    !url.startsWith("http://play.mindustry.men/github/") && !url.startsWith("https://")
+                }) {
+                throw GradleException("Artifact $id must use Xenon mirror or HTTPS URLs")
             }
             artifact.asStringField("versionName", id)
             if ((artifact["build"] as? Number)?.toLong()?.let { it > 0L } != true) {

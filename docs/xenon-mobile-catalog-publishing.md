@@ -3,11 +3,10 @@
 Xenon Mobile downloads Mindustry artifacts from the catalog committed at:
 
 ```text
-http://121.199.60.4/github/raw/DeterMination-Wind/Xenon-Mobile/main/catalog/xenon-mobile-catalog.json
-https://raw.githubusercontent.com/DeterMination-Wind/Xenon-Mobile/main/catalog/xenon-mobile-catalog.json
+http://play.mindustry.men/github/raw/DeterMination-Wind/Xenon-Mobile/main/catalog/xenon-mobile-catalog.json
 ```
 
-The first URL is the primary mirror hosted on `121.199.60.4`. The application tries it first and falls back to GitHub. Catalog artifact URLs remain canonical GitHub HTTPS release URLs so integrity and fallback behavior stay reproducible; the application derives the mirror URL for each download.
+The catalog and artifact URLs use the Xenon mirror hosted at `play.mindustry.men`. GitHub Releases is the publishing backend only; the Hub does not fall back to GitHub at runtime. Older catalogs may still contain canonical GitHub URLs, which the Hub converts to the fixed mirror without retaining the GitHub URL as a download candidate.
 
 ## Runtime Contract
 
@@ -16,7 +15,7 @@ The Hub validates the catalog before showing an artifact. A valid v1 artifact co
 - `variant`, `backend`, and the unique APK `slot` when applicable;
 - `packageName`, `versionCode`, `versionName`, and `signatureSha256` for APKs;
 - `sourceRepo`, `sourceCommit`, `releaseTag`, `build`, and `buildType`;
-- canonical HTTPS `urls`, positive `size`, a 64-character `sha256`, and `nativeProfile = "arm64-v8a"`.
+- mirror or canonical HTTPS `urls`, positive `size`, a 64-character `sha256`, and `nativeProfile = "arm64-v8a"`.
 
 The current catalog may contain an empty `artifacts` array before the first release. The Hub shows an empty-state download page in that case. CI is responsible for replacing it with the 14 current game artifacts: 11 APK slots and 3 JAR variants.
 
@@ -54,7 +53,7 @@ Anuken/MindustryServerList
                      f297264dc24621753bc008a18e17b582fa5e3f65
 ```
 
-Runtime server lists try the mirror's cached `servers_v8.json` or `servers_be.json` route first and fall back to the official HTTPS `main` files. The lock above is for reproducible CI builds and parser fixtures.
+Runtime server lists use only the mirror's cached `servers_v8.json` or `servers_be.json` route. The lock above is for reproducible CI builds and parser fixtures.
 
 ## Local Validation
 
@@ -97,27 +96,27 @@ Stable asset names are derived from the tag, variant, slot, and arm64 profile. R
 The HTTP mirror maps these URL shapes to cached files:
 
 ```text
-http://121.199.60.4/github/raw/<owner>/<repo>/<branch>/<path>
-http://121.199.60.4/github/repos/<owner>/<repo>/releases/download/<tag>/<file>
-http://121.199.60.4/github/repos/<owner>/<repo>/releases/latest
-http://121.199.60.4/github/repos/Anuken/MindustryServerList/servers_v8.json
-http://121.199.60.4/github/repos/Anuken/MindustryServerList/servers_be.json
+http://play.mindustry.men/github/raw/<owner>/<repo>/<branch>/<path>
+http://play.mindustry.men/github/repos/<owner>/<repo>/releases/download/<tag>/<file>
+http://play.mindustry.men/github/repos/<owner>/<repo>/releases/latest
+http://play.mindustry.men/github/repos/Anuken/MindustryServerList/servers_v8.json
+http://play.mindustry.men/github/repos/Anuken/MindustryServerList/servers_be.json
 ```
 
 Catalog responses should be JSON with a short cache lifetime. APK and JAR responses must be direct binary responses with correct `Content-Length`, `Accept-Ranges`, and immutable caching. They must never return an HTML GitHub page.
 
-The primary IP route is currently HTTP. APK and JAR integrity checks remain mandatory, and the canonical HTTPS GitHub URLs remain the fallback source.
+The primary mirror route is currently HTTP. APK and JAR integrity checks remain mandatory. GitHub is not a runtime fallback source.
 
 ## Release Verification
 
 After the release and mirror cache have refreshed, verify the catalog and one artifact from a device-accessible mirror endpoint:
 
 ```powershell
-$catalog = "http://121.199.60.4/github/raw/DeterMination-Wind/Xenon-Mobile/main/catalog/xenon-mobile-catalog.json"
+$catalog = "http://play.mindustry.men/github/raw/DeterMination-Wind/Xenon-Mobile/main/catalog/xenon-mobile-catalog.json"
 curl.exe -L -I $catalog
 curl.exe -L $catalog
 
-$asset = "http://121.199.60.4/github/repos/DeterMination-Wind/Xenon-Mobile/releases/download/vX.Y.Z/xenon-mobile-vanilla-slot1-vX.Y.Z-arm64.apk"
+$asset = "http://play.mindustry.men/github/repos/DeterMination-Wind/Xenon-Mobile/releases/download/vX.Y.Z/xenon-mobile-vanilla-slot1-vX.Y.Z-arm64.apk"
 curl.exe -L -r 0-1023 -D .\range-headers.txt -o .\range-byte.bin $asset
 curl.exe -L -o .\slot1.apk $asset
 (Get-Item .\slot1.apk).Length

@@ -12,7 +12,7 @@ import zipfile
 from pathlib import Path
 
 
-PRIMARY_MIRROR = "http://121.199.60.4/github"
+PRIMARY_MIRROR = "http://play.mindustry.men/github"
 
 
 def sha256(path: Path) -> str:
@@ -129,7 +129,7 @@ def generate_catalog(args: argparse.Namespace) -> None:
         previous_root = json.loads(args.previous.read_text(encoding="utf-8"))
         previous = {identity(item): item for item in previous_root.get("artifacts", [])}
 
-    base = f"https://github.com/DeterMination-Wind/Xenon-Mobile/releases/download/{args.release_tag}"
+    base = f"{PRIMARY_MIRROR}/repos/DeterMination-Wind/Xenon-Mobile/releases/download/{args.release_tag}"
     artifacts = []
     for item in metadata:
         key = identity(item)

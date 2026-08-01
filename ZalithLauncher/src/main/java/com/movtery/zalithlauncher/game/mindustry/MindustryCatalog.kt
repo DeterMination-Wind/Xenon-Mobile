@@ -63,8 +63,8 @@ data class MindustryCatalogManifest(
             require(artifact.build > 0) { "Artifact ${artifact.id} has an invalid build" }
             require(artifact.buildType.isNotBlank()) { "Artifact ${artifact.id} has no buildType" }
             require(artifact.urls.isNotEmpty()) { "Artifact ${artifact.id} has no urls" }
-            require(artifact.urls.all { it.startsWith("https://") }) {
-                "Artifact ${artifact.id} must keep canonical HTTPS source URLs"
+            require(artifact.urls.all { MindustryCatalog.isCatalogUrl(it) }) {
+                "Artifact ${artifact.id} must use HTTPS or the Xenon server mirror"
             }
             require(artifact.sha256.matches(HEX_SHA256)) {
                 "Artifact ${artifact.id} has an invalid sha256"
@@ -162,7 +162,7 @@ data class ServerListSource(
  */
 object MindustryCatalog {
     const val ARM64_NATIVE_PROFILE = "arm64-v8a"
-    const val PRIMARY_GITHUB_MIRROR = "http://121.199.60.4/github"
+    const val PRIMARY_SERVER_MIRROR = "http://play.mindustry.men/github"
     const val DEFAULT_CATALOG_REPO = "DeterMination-Wind/Xenon-Mobile"
     const val DEFAULT_CATALOG_BRANCH = "main"
     const val DEFAULT_CATALOG_PATH = "catalog/xenon-mobile-catalog.json"
@@ -176,7 +176,7 @@ object MindustryCatalog {
     val defaultMirrors: List<CatalogMirror> = listOf(
         CatalogMirror(
             id = "xenon-server",
-            baseUrl = PRIMARY_GITHUB_MIRROR,
+            baseUrl = PRIMARY_SERVER_MIRROR,
             priority = 0
         )
     )
@@ -186,21 +186,21 @@ object MindustryCatalog {
             variant = MindustryVariant.VANILLA,
             channel = "stable",
             urls = listOf(
-                "https://raw.githubusercontent.com/Anuken/MindustryServerList/main/servers_v8.json"
+                "$PRIMARY_SERVER_MIRROR/repos/Anuken/MindustryServerList/servers_v8.json"
             )
         ),
         ServerListSource(
             variant = MindustryVariant.BE,
             channel = "be",
             urls = listOf(
-                "https://raw.githubusercontent.com/Anuken/MindustryServerList/main/servers_be.json"
+                "$PRIMARY_SERVER_MIRROR/repos/Anuken/MindustryServerList/servers_be.json"
             )
         ),
         ServerListSource(
             variant = MindustryVariant.MINDUSTRY_X,
             channel = "stable",
             urls = listOf(
-                "https://raw.githubusercontent.com/Anuken/MindustryServerList/main/servers_v8.json"
+                "$PRIMARY_SERVER_MIRROR/repos/Anuken/MindustryServerList/servers_v8.json"
             )
         )
     )
@@ -249,40 +249,36 @@ object MindustryCatalog {
         mirrors: List<CatalogMirror> = defaultMirrors
     ): List<String> {
         val sourceUrl = "https://raw.githubusercontent.com/${repo.trim('/')}/${branch.trim('/')}/${path.trimStart('/')}"
-        return mirrorFallbackUrls(sourceUrl, mirrors)
+        return mirrorUrls(sourceUrl, mirrors)
     }
 
     fun artifactDownloadUrls(
         artifact: MindustryArtifact,
         manifest: MindustryCatalogManifest
     ): List<String> {
-        val mirrors = manifest.mirrors.ifEmpty { defaultMirrors }
         return artifact.urls
-            .flatMap { url -> mirrorFallbackUrls(url, mirrors) }
+            .flatMap { url -> mirrorUrls(url) }
             .distinct()
     }
 
-    fun githubRepoMirror(repo: String, path: String): String =
-        "$PRIMARY_GITHUB_MIRROR/repos/${repo.trim('/')}/${path.trimStart('/')}"
+    fun serverMirrorRepoUrl(repo: String, path: String): String =
+        "$PRIMARY_SERVER_MIRROR/repos/${repo.trim('/')}/${path.trimStart('/')}"
 
-    fun serverListFallbackUrls(
-        url: String,
-        mirrors: List<CatalogMirror> = defaultMirrors
-    ): List<String> {
+    fun serverListUrls(url: String): List<String> {
+        if (isPrimaryMirrorUrl(url)) return listOf(url)
+
         val rawPrefix = "https://raw.githubusercontent.com/Anuken/MindustryServerList/main/"
-        if (!url.startsWith(rawPrefix)) return mirrorFallbackUrls(url, mirrors)
+        if (!url.startsWith(rawPrefix)) return emptyList()
 
         val path = url.removePrefix(rawPrefix).trimStart('/')
-        if (path.isBlank()) return listOf(url)
-        val mirrored = mirrors
-            .sortedBy { it.priority }
-            .map { mirror ->
-                "${mirror.baseUrl.trimEnd('/')}/repos/Anuken/MindustryServerList/$path"
-            }
-        return (mirrored + url).distinct()
+        if (path.isBlank()) return emptyList()
+        return listOf("$PRIMARY_SERVER_MIRROR/repos/Anuken/MindustryServerList/$path")
     }
 
-    fun mirrorFallbackUrls(url: String, mirrors: List<CatalogMirror> = defaultMirrors): List<String> {
+    /** Returns only the Xenon mirror URL for a supported canonical source URL. */
+    fun mirrorUrls(url: String, mirrors: List<CatalogMirror> = defaultMirrors): List<String> {
+        if (isPrimaryMirrorUrl(url)) return listOf(url)
+
         val ordered = mirrors.sortedBy { it.priority }
         val mirrored = ordered.mapNotNull { mirror ->
             when {
@@ -298,8 +294,14 @@ object MindustryCatalog {
             }
         }
 
-        return (mirrored + url).distinct()
+        return mirrored.distinct()
     }
+
+    fun isPrimaryMirrorUrl(url: String): Boolean =
+        url == PRIMARY_SERVER_MIRROR || url.startsWith("$PRIMARY_SERVER_MIRROR/")
+
+    fun isCatalogUrl(url: String): Boolean =
+        url.startsWith("https://") || isPrimaryMirrorUrl(url)
 
     private object MindustryVariantAdapter : JsonDeserializer<MindustryVariant>, JsonSerializer<MindustryVariant> {
         override fun deserialize(

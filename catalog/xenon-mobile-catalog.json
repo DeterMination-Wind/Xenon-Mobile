@@ -13,7 +13,7 @@
   "mirrors": [
     {
       "id": "xenon-server",
-      "baseUrl": "http://121.199.60.4/github",
+      "baseUrl": "http://play.mindustry.men/github",
       "priority": 0
     }
   ],
@@ -43,7 +43,7 @@
         "b0d3d96fd0e179aab332b0622a36db3ae175b649a34b5f98e7ab5be01699947d"
       ],
       "urls": [
-        "https://github.com/DeterMination-Wind/Xenon-Mobile/releases/download/v0.0.0-ci-20260801-r14/xenon-mobile-be-slot1-v0.0.0-ci-20260801-r14-arm64.apk"
+        "http://play.mindustry.men/github/repos/DeterMination-Wind/Xenon-Mobile/releases/download/v0.0.0-ci-20260801-r14/xenon-mobile-be-slot1-v0.0.0-ci-20260801-r14-arm64.apk"
       ]
     },
     {
@@ -69,7 +69,7 @@
       "releaseTag": "v0.0.0-ci-20260801-r14",
       "signatureSha256": [],
       "urls": [
-        "https://github.com/DeterMination-Wind/Xenon-Mobile/releases/download/v0.0.0-ci-20260801-r14/xenon-mindustry-be-v0.0.0-ci-20260801-r14-arm64.jar"
+        "http://play.mindustry.men/github/repos/DeterMination-Wind/Xenon-Mobile/releases/download/v0.0.0-ci-20260801-r14/xenon-mindustry-be-v0.0.0-ci-20260801-r14-arm64.jar"
       ]
     },
     {
@@ -97,7 +97,7 @@
         "b0d3d96fd0e179aab332b0622a36db3ae175b649a34b5f98e7ab5be01699947d"
       ],
       "urls": [
-        "https://github.com/DeterMination-Wind/Xenon-Mobile/releases/download/v0.0.0-ci-20260801-r14/xenon-mobile-mindustryx-slot1-v0.0.0-ci-20260801-r14-arm64.apk"
+        "http://play.mindustry.men/github/repos/DeterMination-Wind/Xenon-Mobile/releases/download/v0.0.0-ci-20260801-r14/xenon-mobile-mindustryx-slot1-v0.0.0-ci-20260801-r14-arm64.apk"
       ]
     },
     {
@@ -125,7 +125,7 @@
         "b0d3d96fd0e179aab332b0622a36db3ae175b649a34b5f98e7ab5be01699947d"
       ],
       "urls": [
-        "https://github.com/DeterMination-Wind/Xenon-Mobile/releases/download/v0.0.0-ci-20260801-r14/xenon-mobile-mindustryx-slot2-v0.0.0-ci-20260801-r14-arm64.apk"
+        "http://play.mindustry.men/github/repos/DeterMination-Wind/Xenon-Mobile/releases/download/v0.0.0-ci-20260801-r14/xenon-mobile-mindustryx-slot2-v0.0.0-ci-20260801-r14-arm64.apk"
       ]
     },
     {
@@ -153,7 +153,7 @@
         "b0d3d96fd0e179aab332b0622a36db3ae175b649a34b5f98e7ab5be01699947d"
       ],
       "urls": [
-        "https://github.com/DeterMination-Wind/Xenon-Mobile/releases/download/v0.0.0-ci-20260801-r14/xenon-mobile-mindustryx-slot3-v0.0.0-ci-20260801-r14-arm64.apk"
+        "http://play.mindustry.men/github/repos/DeterMination-Wind/Xenon-Mobile/releases/download/v0.0.0-ci-20260801-r14/xenon-mobile-mindustryx-slot3-v0.0.0-ci-20260801-r14-arm64.apk"
       ]
     },
     {
@@ -181,7 +181,7 @@
         "b0d3d96fd0e179aab332b0622a36db3ae175b649a34b5f98e7ab5be01699947d"
       ],
       "urls": [
-        "https://github.com/DeterMination-Wind/Xenon-Mobile/releases/download/v0.0.0-ci-20260801-r14/xenon-mobile-mindustryx-slot4-v0.0.0-ci-20260801-r14-arm64.apk"
+        "http://play.mindustry.men/github/repos/DeterMination-Wind/Xenon-Mobile/releases/download/v0.0.0-ci-20260801-r14/xenon-mobile-mindustryx-slot4-v0.0.0-ci-20260801-r14-arm64.apk"
       ]
     },
     {
@@ -209,7 +209,7 @@
         "b0d3d96fd0e179aab332b0622a36db3ae175b649a34b5f98e7ab5be01699947d"
       ],
       "urls": [
-        "https://github.com/DeterMination-Wind/Xenon-Mobile/releases/download/v0.0.0-ci-20260801-r14/xenon-mobile-mindustryx-slot5-v0.0.0-ci-20260801-r14-arm64.apk"
+        "http://play.mindustry.men/github/repos/DeterMination-Wind/Xenon-Mobile/releases/download/v0.0.0-ci-20260801-r14/xenon-mobile-mindustryx-slot5-v0.0.0-ci-20260801-r14-arm64.apk"
       ]
     },
     {
@@ -235,7 +235,7 @@
       "releaseTag": "v0.0.0-ci-20260801-r14",
       "signatureSha256": [],
       "urls": [
-        "https://github.com/DeterMination-Wind/Xenon-Mobile/releases/download/v0.0.0-ci-20260801-r14/xenon-mindustry-mindustryx-v0.0.0-ci-20260801-r14-arm64.jar"
+        "http://play.mindustry.men/github/repos/DeterMination-Wind/Xenon-Mobile/releases/download/v0.0.0-ci-20260801-r14/xenon-mindustry-mindustryx-v0.0.0-ci-20260801-r14-arm64.jar"
       ]
     },
     {
@@ -263,7 +263,7 @@
         "b0d3d96fd0e179aab332b0622a36db3ae175b649a34b5f98e7ab5be01699947d"
       ],
       "urls": [
-        "https://github.com/DeterMination-Wind/Xenon-Mobile/releases/download/v0.0.0-ci-20260801-r14/xenon-mobile-vanilla-slot1-v0.0.0-ci-20260801-r14-arm64.apk"
+        "http://play.mindustry.men/github/repos/DeterMination-Wind/Xenon-Mobile/releases/download/v0.0.0-ci-20260801-r14/xenon-mobile-vanilla-slot1-v0.0.0-ci-20260801-r14-arm64.apk"
       ]
     },
     {
@@ -291,7 +291,7 @@
         "b0d3d96fd0e179aab332b0622a36db3ae175b649a34b5f98e7ab5be01699947d"
       ],
       "urls": [
-        "https://github.com/DeterMination-Wind/Xenon-Mobile/releases/download/v0.0.0-ci-20260801-r14/xenon-mobile-vanilla-slot2-v0.0.0-ci-20260801-r14-arm64.apk"
+        "http://play.mindustry.men/github/repos/DeterMination-Wind/Xenon-Mobile/releases/download/v0.0.0-ci-20260801-r14/xenon-mobile-vanilla-slot2-v0.0.0-ci-20260801-r14-arm64.apk"
       ]
     },
     {
@@ -319,7 +319,7 @@
         "b0d3d96fd0e179aab332b0622a36db3ae175b649a34b5f98e7ab5be01699947d"
       ],
       "urls": [
-        "https://github.com/DeterMination-Wind/Xenon-Mobile/releases/download/v0.0.0-ci-20260801-r14/xenon-mobile-vanilla-slot3-v0.0.0-ci-20260801-r14-arm64.apk"
+        "http://play.mindustry.men/github/repos/DeterMination-Wind/Xenon-Mobile/releases/download/v0.0.0-ci-20260801-r14/xenon-mobile-vanilla-slot3-v0.0.0-ci-20260801-r14-arm64.apk"
       ]
     },
     {
@@ -347,7 +347,7 @@
         "b0d3d96fd0e179aab332b0622a36db3ae175b649a34b5f98e7ab5be01699947d"
       ],
       "urls": [
-        "https://github.com/DeterMination-Wind/Xenon-Mobile/releases/download/v0.0.0-ci-20260801-r14/xenon-mobile-vanilla-slot4-v0.0.0-ci-20260801-r14-arm64.apk"
+        "http://play.mindustry.men/github/repos/DeterMination-Wind/Xenon-Mobile/releases/download/v0.0.0-ci-20260801-r14/xenon-mobile-vanilla-slot4-v0.0.0-ci-20260801-r14-arm64.apk"
       ]
     },
     {
@@ -375,7 +375,7 @@
         "b0d3d96fd0e179aab332b0622a36db3ae175b649a34b5f98e7ab5be01699947d"
       ],
       "urls": [
-        "https://github.com/DeterMination-Wind/Xenon-Mobile/releases/download/v0.0.0-ci-20260801-r14/xenon-mobile-vanilla-slot5-v0.0.0-ci-20260801-r14-arm64.apk"
+        "http://play.mindustry.men/github/repos/DeterMination-Wind/Xenon-Mobile/releases/download/v0.0.0-ci-20260801-r14/xenon-mobile-vanilla-slot5-v0.0.0-ci-20260801-r14-arm64.apk"
       ]
     },
     {
@@ -401,7 +401,7 @@
       "releaseTag": "v0.0.0-ci-20260801-r14",
       "signatureSha256": [],
       "urls": [
-        "https://github.com/DeterMination-Wind/Xenon-Mobile/releases/download/v0.0.0-ci-20260801-r14/xenon-mindustry-vanilla-v0.0.0-ci-20260801-r14-arm64.jar"
+        "http://play.mindustry.men/github/repos/DeterMination-Wind/Xenon-Mobile/releases/download/v0.0.0-ci-20260801-r14/xenon-mindustry-vanilla-v0.0.0-ci-20260801-r14-arm64.jar"
       ]
     }
   ]

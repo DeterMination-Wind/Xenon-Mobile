@@ -76,7 +76,7 @@ sealed interface LauncherUpgradeOperation {
 /**
  * 最新版本的信息获取源
  */
-private val LATEST_API_URL = MindustryCatalog.githubRepoMirror(
+private val LATEST_API_URL = MindustryCatalog.serverMirrorRepoUrl(
     repo = "DeterMination-Wind/Xenon-Mobile",
     path = "releases/latest"
 )
@@ -226,9 +226,7 @@ class LauncherUpgradeViewModel: ViewModel() {
                 Logger.warning(TAG, "Release $tagName has no numeric versionCode metadata")
             }
         val files = assets.mapNotNull { asset ->
-            if (!asset.name.endsWith(".apk", ignoreCase = true) ||
-                !asset.downloadUrl.startsWith("https://")
-            ) return@mapNotNull null
+            if (!asset.name.endsWith(".apk", ignoreCase = true)) return@mapNotNull null
             val arch = when {
                 asset.name.contains("arm64", true) -> RemoteData.RemoteFile.Arch.ARM64
                 asset.name.contains("armeabi-v7a", true) || asset.name.contains("-arm.", true) -> RemoteData.RemoteFile.Arch.ARM
@@ -236,7 +234,7 @@ class LauncherUpgradeViewModel: ViewModel() {
                 asset.name.contains("x86", true) -> RemoteData.RemoteFile.Arch.X86
                 else -> RemoteData.RemoteFile.Arch.ALL
             }
-            val downloadUrl = MindustryCatalog.mirrorFallbackUrls(asset.downloadUrl).firstOrNull()
+            val downloadUrl = MindustryCatalog.mirrorUrls(asset.downloadUrl).firstOrNull()
                 ?: return@mapNotNull null
             RemoteData.RemoteFile(asset.name, downloadUrl, arch, asset.size)
         }
