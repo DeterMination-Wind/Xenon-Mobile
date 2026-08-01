@@ -4,15 +4,16 @@
 
 [English](README.md) | [简体中文](README_ZH_CN.md)
 
-Xenon Mobile 是面向 Android 的 Mindustry Hub，管理源码建置的 Vanilla、Bleeding Edge 与 MindustryX JAR 实例，以及固定的 arm64 clone APK 槽位、Mindustry Profile、隔离资料、备份和 HTTPS 伺服器目录。
+Xenon Mobile 是面向 Android 的 Mindustry Hub，管理源码建置的 Vanilla、Bleeding Edge 与 MindustryX JAR 实例，以及固定的 arm64 clone APK 槽位、Mindustry Profile、隔离资料、备份和伺服器镜像目录。
 
 Hub 目前读取：
 
 ```text
+http://121.199.60.4/github/raw/DeterMination-Wind/Xenon-Mobile/main/catalog/xenon-mobile-catalog.json
 https://raw.githubusercontent.com/DeterMination-Wind/Xenon-Mobile/main/catalog/xenon-mobile-catalog.json
 ```
 
-发布档案位于 [GitHub Releases](https://github.com/DeterMination-Wind/Xenon-Mobile/releases)。APK 使用 Android 系统确认页安装，并在启动前校验套件名称、版本、ABI、签名、档案大小和 SHA-256。
+第一条位址是 Xenon 伺服器镜像，第二条 HTTPS 位址是回退来源。发布档案位于 [GitHub Releases](https://github.com/DeterMination-Wind/Xenon-Mobile/releases)，应用会优先通过镜像下载。APK 使用 Android 系统确认页安装，并在启动前校验套件名称、版本、ABI、签名、档案大小和 SHA-256。
 
 ## 本地建置
 

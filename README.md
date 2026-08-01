@@ -4,15 +4,16 @@
 
 [简体中文](README_ZH_CN.md) | [繁體中文](README_ZH_TW.md)
 
-Xenon Mobile is an Android Hub for source-built Mindustry variants. It manages Vanilla, Bleeding Edge, and MindustryX JAR instances, fixed arm64 clone APK slots, Mindustry Profiles, isolated data, backups, and the HTTPS server catalog.
+Xenon Mobile is an Android Hub for source-built Mindustry variants. It manages Vanilla, Bleeding Edge, and MindustryX JAR instances, fixed arm64 clone APK slots, Mindustry Profiles, isolated data, backups, and the mirror-backed server catalog.
 
 The Hub reads the current artifact catalog from:
 
 ```text
+http://121.199.60.4/github/raw/DeterMination-Wind/Xenon-Mobile/main/catalog/xenon-mobile-catalog.json
 https://raw.githubusercontent.com/DeterMination-Wind/Xenon-Mobile/main/catalog/xenon-mobile-catalog.json
 ```
 
-Release downloads are published on [GitHub Releases](https://github.com/DeterMination-Wind/Xenon-Mobile/releases). APK installation uses the Android system confirmation flow and verifies package identity, version, ABI, signature, size, and SHA-256 before launch.
+The first URL is the Xenon server mirror; the HTTPS GitHub URL is the fallback. Release downloads are published on [GitHub Releases](https://github.com/DeterMination-Wind/Xenon-Mobile/releases) and are requested through the mirror first. APK installation uses the Android system confirmation flow and verifies package identity, version, ABI, signature, size, and SHA-256 before launch.
 
 ## Development Build
 

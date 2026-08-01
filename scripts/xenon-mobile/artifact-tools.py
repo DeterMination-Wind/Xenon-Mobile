@@ -12,6 +12,9 @@ import zipfile
 from pathlib import Path
 
 
+PRIMARY_MIRROR = "http://121.199.60.4/github"
+
+
 def sha256(path: Path) -> str:
     digest = hashlib.sha256()
     with path.open("rb") as stream:
@@ -145,7 +148,7 @@ def generate_catalog(args: argparse.Namespace) -> None:
         "schemaVersion": 1,
         "variants": ["vanilla", "be", "mindustryx"],
         "channels": ["stable", "be", "dev"],
-        "mirrors": [{"id": "mindustry.men", "baseUrl": "https://mindustry.men/github", "priority": 0}],
+        "mirrors": [{"id": "xenon-server", "baseUrl": PRIMARY_MIRROR, "priority": 0}],
         "artifacts": sorted(artifacts, key=lambda item: identity(item)),
     }
     args.output.parent.mkdir(parents=True, exist_ok=True)

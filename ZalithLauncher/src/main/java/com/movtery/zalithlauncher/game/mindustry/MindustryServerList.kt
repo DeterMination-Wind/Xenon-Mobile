@@ -307,7 +307,10 @@ class MindustryServerListRepository(
 
         var lastError: Throwable? = null
         for (url in sourceUrls(variant)) {
-            require(url.startsWith("https://")) { "Server list source must use HTTPS: $url" }
+            require(
+                url.startsWith("https://") ||
+                    url.startsWith("${MindustryCatalog.PRIMARY_GITHUB_MIRROR}/")
+            ) { "Server list source must use HTTPS or the configured Xenon mirror: $url" }
             try {
                 val entries = MindustryServerListParser.parse(fetcher(url))
                 cache.parentFile?.mkdirs()
@@ -334,6 +337,7 @@ class MindustryServerListRepository(
         MindustryCatalog.defaultServerListSources
             .first { it.variant == variant }
             .urls
+            .flatMap { MindustryCatalog.serverListFallbackUrls(it) }
             .distinct()
 
     private fun Long?.orZero(): Long = this ?: 0L

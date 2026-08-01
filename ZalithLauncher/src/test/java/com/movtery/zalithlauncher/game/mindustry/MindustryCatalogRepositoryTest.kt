@@ -23,8 +23,32 @@ import junit.framework.TestCase.assertTrue
 import kotlinx.coroutines.runBlocking
 import org.junit.Test
 import java.io.IOException
+import java.nio.file.Files
 
 class MindustryCatalogRepositoryTest {
+    @Test
+    fun serverListRepositoryUsesServerMirrorBeforeOfficialSource() = runBlocking {
+        val cacheRoot = Files.createTempDirectory("xenon-server-list").toFile()
+        val attemptedUrls = mutableListOf<String>()
+        try {
+            val result = MindustryServerListRepository(cacheRoot).load(
+                variant = MindustryVariant.VANILLA,
+                forceRefresh = true
+            ) { url ->
+                attemptedUrls += url
+                "[]"
+            }
+
+            assertEquals(
+                "http://121.199.60.4/github/repos/Anuken/MindustryServerList/servers_v8.json",
+                result.sourceUrl
+            )
+            assertEquals(listOf(result.sourceUrl), attemptedUrls)
+        } finally {
+            cacheRoot.deleteRecursively()
+        }
+    }
+
     @Test
     fun fetchManifestFallsBackToSecondUrl() = runBlocking {
         val sha = "a".repeat(64)

@@ -89,7 +89,7 @@ class MindustryCatalogTest {
         )
 
         assertEquals(
-            "https://mindustry.men/github/repos/Anuken/Mindustry/releases/download/v146/Mindustry.jar",
+            "http://121.199.60.4/github/repos/Anuken/Mindustry/releases/download/v146/Mindustry.jar",
             urls.first()
         )
         assertEquals(
@@ -103,7 +103,7 @@ class MindustryCatalogTest {
         val urls = MindustryCatalog.defaultManifestUrls()
 
         assertEquals(
-            "https://mindustry.men/github/raw/DeterMination-Wind/Xenon-Mobile/main/catalog/xenon-mobile-catalog.json",
+            "http://121.199.60.4/github/raw/DeterMination-Wind/Xenon-Mobile/main/catalog/xenon-mobile-catalog.json",
             urls.first()
         )
         assertEquals(
@@ -122,7 +122,7 @@ class MindustryCatalogTest {
               "mirrors": [
                 {
                   "id": "mirror",
-                  "baseUrl": "https://mindustry.men/github",
+                  "baseUrl": "http://121.199.60.4/github",
                   "priority": 0
                 }
               ],
@@ -151,7 +151,7 @@ class MindustryCatalogTest {
         val urls = MindustryCatalog.artifactDownloadUrls(catalog.artifacts.single(), catalog)
 
         assertEquals(
-            "https://mindustry.men/github/repos/Anuken/Mindustry/releases/download/v146/Mindustry.jar",
+            "http://121.199.60.4/github/repos/Anuken/Mindustry/releases/download/v146/Mindustry.jar",
             urls.first()
         )
         assertEquals(
@@ -162,10 +162,15 @@ class MindustryCatalogTest {
 
     @Test
     fun serverListSourcesUseConfiguredPrimaryMirror() {
-        assertTrue(
-            MindustryCatalog.defaultServerListSources
-                .flatMap { it.urls }
-                .all { it.startsWith("https://raw.githubusercontent.com/Anuken/MindustryServerList/") }
+        val canonical = MindustryCatalog.defaultServerListSources
+            .flatMap { it.urls }
+            .first()
+        val urls = MindustryCatalog.serverListFallbackUrls(canonical)
+
+        assertEquals(
+            "http://121.199.60.4/github/repos/Anuken/MindustryServerList/servers_v8.json",
+            urls.first()
         )
+        assertTrue(urls.last().startsWith("https://raw.githubusercontent.com/Anuken/MindustryServerList/"))
     }
 }

@@ -40,6 +40,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.movtery.zalithlauncher.BuildConfig
 import com.movtery.zalithlauncher.R
+import com.movtery.zalithlauncher.game.mindustry.MindustryCatalog
 import com.movtery.zalithlauncher.path.GLOBAL_CLIENT
 import com.movtery.zalithlauncher.setting.AllSettings
 import com.movtery.zalithlauncher.ui.components.MarqueeText
@@ -75,8 +76,10 @@ sealed interface LauncherUpgradeOperation {
 /**
  * 最新版本的信息获取源
  */
-private const val LATEST_API_URL =
-    "https://api.github.com/repos/DeterMination-Wind/Xenon-Mobile/releases/latest"
+private val LATEST_API_URL = MindustryCatalog.githubRepoMirror(
+    repo = "DeterMination-Wind/Xenon-Mobile",
+    path = "releases/latest"
+)
 
 @kotlinx.serialization.Serializable
 private data class GithubRelease(
@@ -233,7 +236,9 @@ class LauncherUpgradeViewModel: ViewModel() {
                 asset.name.contains("x86", true) -> RemoteData.RemoteFile.Arch.X86
                 else -> RemoteData.RemoteFile.Arch.ALL
             }
-            RemoteData.RemoteFile(asset.name, asset.downloadUrl, arch, asset.size)
+            val downloadUrl = MindustryCatalog.mirrorFallbackUrls(asset.downloadUrl).firstOrNull()
+                ?: return@mapNotNull null
+            RemoteData.RemoteFile(asset.name, downloadUrl, arch, asset.size)
         }
         if (files.isEmpty()) return null
         val markdown = body.orEmpty()

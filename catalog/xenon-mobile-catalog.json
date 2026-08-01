@@ -12,8 +12,8 @@
   ],
   "mirrors": [
     {
-      "id": "mindustry.men",
-      "baseUrl": "https://mindustry.men/github",
+      "id": "xenon-server",
+      "baseUrl": "http://121.199.60.4/github",
       "priority": 0
     }
   ],

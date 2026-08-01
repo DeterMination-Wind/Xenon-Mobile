@@ -162,7 +162,7 @@ data class ServerListSource(
  */
 object MindustryCatalog {
     const val ARM64_NATIVE_PROFILE = "arm64-v8a"
-    const val PRIMARY_GITHUB_MIRROR = "https://mindustry.men/github"
+    const val PRIMARY_GITHUB_MIRROR = "http://121.199.60.4/github"
     const val DEFAULT_CATALOG_REPO = "DeterMination-Wind/Xenon-Mobile"
     const val DEFAULT_CATALOG_BRANCH = "main"
     const val DEFAULT_CATALOG_PATH = "catalog/xenon-mobile-catalog.json"
@@ -175,7 +175,7 @@ object MindustryCatalog {
 
     val defaultMirrors: List<CatalogMirror> = listOf(
         CatalogMirror(
-            id = "mindustry.men",
+            id = "xenon-server",
             baseUrl = PRIMARY_GITHUB_MIRROR,
             priority = 0
         )
@@ -264,6 +264,23 @@ object MindustryCatalog {
 
     fun githubRepoMirror(repo: String, path: String): String =
         "$PRIMARY_GITHUB_MIRROR/repos/${repo.trim('/')}/${path.trimStart('/')}"
+
+    fun serverListFallbackUrls(
+        url: String,
+        mirrors: List<CatalogMirror> = defaultMirrors
+    ): List<String> {
+        val rawPrefix = "https://raw.githubusercontent.com/Anuken/MindustryServerList/main/"
+        if (!url.startsWith(rawPrefix)) return mirrorFallbackUrls(url, mirrors)
+
+        val path = url.removePrefix(rawPrefix).trimStart('/')
+        if (path.isBlank()) return listOf(url)
+        val mirrored = mirrors
+            .sortedBy { it.priority }
+            .map { mirror ->
+                "${mirror.baseUrl.trimEnd('/')}/repos/Anuken/MindustryServerList/$path"
+            }
+        return (mirrored + url).distinct()
+    }
 
     fun mirrorFallbackUrls(url: String, mirrors: List<CatalogMirror> = defaultMirrors): List<String> {
         val ordered = mirrors.sortedBy { it.priority }
