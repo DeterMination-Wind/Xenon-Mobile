@@ -9,7 +9,7 @@ Xenon Mobile is an Android Hub for source-built Mindustry variants. It manages V
 The Hub reads the current artifact catalog from:
 
 ```text
-http://play.mindustry.men/github/raw/DeterMination-Wind/Xenon-Mobile/main/catalog/xenon-mobile-catalog.json
+https://play.mindustry.men/github/raw/DeterMination-Wind/Xenon-Mobile/main/catalog/xenon-mobile-catalog.json
 ```
 
 The catalog and release downloads are served through the Xenon mirror at `play.mindustry.men`. GitHub Releases remains the publishing backend, but the Hub does not use GitHub as a runtime download fallback. APK installation uses the Android system confirmation flow and verifies package identity, version, ABI, signature, size, and SHA-256 before launch.

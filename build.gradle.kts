@@ -100,7 +100,7 @@ tasks.register("validateXenonMobileCatalog") {
             val urls = artifact["urls"] as? List<*> ?: throw GradleException("Artifact $id has no urls")
             if (urls.isEmpty() || urls.any {
                     val url = it.toString()
-                    !url.startsWith("http://play.mindustry.men/github/") && !url.startsWith("https://")
+                    !url.startsWith("https://play.mindustry.men/github/") && !url.startsWith("https://")
                 }) {
                 throw GradleException("Artifact $id must use Xenon mirror or HTTPS URLs")
             }

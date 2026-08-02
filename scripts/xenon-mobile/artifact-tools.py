@@ -12,7 +12,7 @@ import zipfile
 from pathlib import Path
 
 
-PRIMARY_MIRROR = "http://play.mindustry.men/github"
+PRIMARY_MIRROR = "https://play.mindustry.men/github"
 
 
 def sha256(path: Path) -> str:

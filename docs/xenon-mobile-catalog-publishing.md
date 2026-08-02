@@ -3,7 +3,7 @@
 Xenon Mobile downloads Mindustry artifacts from the catalog committed at:
 
 ```text
-http://play.mindustry.men/github/raw/DeterMination-Wind/Xenon-Mobile/main/catalog/xenon-mobile-catalog.json
+https://play.mindustry.men/github/raw/DeterMination-Wind/Xenon-Mobile/main/catalog/xenon-mobile-catalog.json
 ```
 
 The catalog and artifact URLs use the Xenon mirror hosted at `play.mindustry.men`. GitHub Releases is the publishing backend only; the Hub does not fall back to GitHub at runtime. Older catalogs may still contain canonical GitHub URLs, which the Hub converts to the fixed mirror without retaining the GitHub URL as a download candidate.
@@ -96,11 +96,11 @@ Stable asset names are derived from the tag, variant, slot, and arm64 profile. R
 The HTTP mirror maps these URL shapes to cached files:
 
 ```text
-http://play.mindustry.men/github/raw/<owner>/<repo>/<branch>/<path>
-http://play.mindustry.men/github/repos/<owner>/<repo>/releases/download/<tag>/<file>
-http://play.mindustry.men/github/repos/<owner>/<repo>/releases/latest
-http://play.mindustry.men/github/repos/Anuken/MindustryServerList/servers_v8.json
-http://play.mindustry.men/github/repos/Anuken/MindustryServerList/servers_be.json
+https://play.mindustry.men/github/raw/<owner>/<repo>/<branch>/<path>
+https://play.mindustry.men/github/repos/<owner>/<repo>/releases/download/<tag>/<file>
+https://play.mindustry.men/github/repos/<owner>/<repo>/releases/latest
+https://play.mindustry.men/github/repos/Anuken/MindustryServerList/servers_v8.json
+https://play.mindustry.men/github/repos/Anuken/MindustryServerList/servers_be.json
 ```
 
 Catalog responses should be JSON with a short cache lifetime. APK and JAR responses must be direct binary responses with correct `Content-Length`, `Accept-Ranges`, and immutable caching. They must never return an HTML GitHub page.
@@ -112,11 +112,11 @@ The primary mirror route is currently HTTP. APK and JAR integrity checks remain 
 After the release and mirror cache have refreshed, verify the catalog and one artifact from a device-accessible mirror endpoint:
 
 ```powershell
-$catalog = "http://play.mindustry.men/github/raw/DeterMination-Wind/Xenon-Mobile/main/catalog/xenon-mobile-catalog.json"
+$catalog = "https://play.mindustry.men/github/raw/DeterMination-Wind/Xenon-Mobile/main/catalog/xenon-mobile-catalog.json"
 curl.exe -L -I $catalog
 curl.exe -L $catalog
 
-$asset = "http://play.mindustry.men/github/repos/DeterMination-Wind/Xenon-Mobile/releases/download/vX.Y.Z/xenon-mobile-vanilla-slot1-vX.Y.Z-arm64.apk"
+$asset = "https://play.mindustry.men/github/repos/DeterMination-Wind/Xenon-Mobile/releases/download/vX.Y.Z/xenon-mobile-vanilla-slot1-vX.Y.Z-arm64.apk"
 curl.exe -L -r 0-1023 -D .\range-headers.txt -o .\range-byte.bin $asset
 curl.exe -L -o .\slot1.apk $asset
 (Get-Item .\slot1.apk).Length

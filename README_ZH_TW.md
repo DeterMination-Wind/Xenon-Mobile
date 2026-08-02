@@ -9,7 +9,7 @@ Xenon Mobile 是面向 Android 的 Mindustry Hub，管理源码建置的 Vanilla
 Hub 目前读取：
 
 ```text
-http://play.mindustry.men/github/raw/DeterMination-Wind/Xenon-Mobile/main/catalog/xenon-mobile-catalog.json
+https://play.mindustry.men/github/raw/DeterMination-Wind/Xenon-Mobile/main/catalog/xenon-mobile-catalog.json
 ```
 
 catalog 和发布档案统一通过 `play.mindustry.men` 的 Xenon 伺服器镜像访问。GitHub Releases 仅作为发布后端，Hub 运行时不再回退访问 GitHub。APK 使用 Android 系统确认页安装，并在启动前校验套件名称、版本、ABI、签名、档案大小和 SHA-256。

@@ -89,7 +89,7 @@ class MindustryCatalogTest {
         )
 
         assertEquals(
-            listOf("http://play.mindustry.men/github/repos/Anuken/Mindustry/releases/download/v146/Mindustry.jar"),
+            listOf("https://play.mindustry.men/github/repos/Anuken/Mindustry/releases/download/v146/Mindustry.jar"),
             urls
         )
     }
@@ -99,7 +99,7 @@ class MindustryCatalogTest {
         val urls = MindustryCatalog.defaultManifestUrls()
 
         assertEquals(
-            listOf("http://play.mindustry.men/github/raw/DeterMination-Wind/Xenon-Mobile/main/catalog/xenon-mobile-catalog.json"),
+            listOf("https://play.mindustry.men/github/raw/DeterMination-Wind/Xenon-Mobile/main/catalog/xenon-mobile-catalog.json"),
             urls
         )
     }
@@ -114,7 +114,7 @@ class MindustryCatalogTest {
               "mirrors": [
                 {
                   "id": "mirror",
-                  "baseUrl": "http://play.mindustry.men/github",
+                  "baseUrl": "https://play.mindustry.men/github",
                   "priority": 0
                 }
               ],
@@ -143,7 +143,7 @@ class MindustryCatalogTest {
         val urls = MindustryCatalog.artifactDownloadUrls(catalog.artifacts.single(), catalog)
 
         assertEquals(
-            listOf("http://play.mindustry.men/github/repos/Anuken/Mindustry/releases/download/v146/Mindustry.jar"),
+            listOf("https://play.mindustry.men/github/repos/Anuken/Mindustry/releases/download/v146/Mindustry.jar"),
             urls
         )
     }
@@ -154,7 +154,7 @@ class MindustryCatalogTest {
         val urls = MindustryCatalog.serverListUrls(canonical)
 
         assertEquals(
-            listOf("http://play.mindustry.men/github/repos/Anuken/MindustryServerList/servers_v8.json"),
+            listOf("https://play.mindustry.men/github/repos/Anuken/MindustryServerList/servers_v8.json"),
             urls
         )
     }

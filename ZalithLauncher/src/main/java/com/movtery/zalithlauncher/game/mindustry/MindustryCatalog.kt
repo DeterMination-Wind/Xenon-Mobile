@@ -162,7 +162,7 @@ data class ServerListSource(
  */
 object MindustryCatalog {
     const val ARM64_NATIVE_PROFILE = "arm64-v8a"
-    const val PRIMARY_SERVER_MIRROR = "http://play.mindustry.men/github"
+    const val PRIMARY_SERVER_MIRROR = "https://play.mindustry.men/github"
     const val DEFAULT_CATALOG_REPO = "DeterMination-Wind/Xenon-Mobile"
     const val DEFAULT_CATALOG_BRANCH = "main"
     const val DEFAULT_CATALOG_PATH = "catalog/xenon-mobile-catalog.json"

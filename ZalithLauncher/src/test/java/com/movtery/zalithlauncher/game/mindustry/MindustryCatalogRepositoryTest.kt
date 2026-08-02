@@ -40,7 +40,7 @@ class MindustryCatalogRepositoryTest {
             }
 
             assertEquals(
-                "http://play.mindustry.men/github/repos/Anuken/MindustryServerList/servers_v8.json",
+                "https://play.mindustry.men/github/repos/Anuken/MindustryServerList/servers_v8.json",
                 result.sourceUrl
             )
             assertEquals(listOf(result.sourceUrl), attemptedUrls)
