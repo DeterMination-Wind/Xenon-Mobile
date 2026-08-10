@@ -17,7 +17,7 @@ The Hub validates the catalog before showing an artifact. A valid v1 artifact co
 - `sourceRepo`, `sourceCommit`, `releaseTag`, `build`, and `buildType`;
 - mirror or canonical HTTPS `urls`, positive `size`, a 64-character `sha256`, and `nativeProfile = "arm64-v8a"`.
 
-The current catalog may contain an empty `artifacts` array before the first release. The Hub shows an empty-state download page in that case. CI is responsible for replacing it with the 14 current game artifacts: 11 APK slots and 3 JAR variants.
+The current catalog contains the 14 published game artifacts: 11 APK slots and 3 JAR variants.
 
 Downloaded files are written below the app-owned Mindustry catalog cache. Size and SHA-256 are checked both after download and before use. APKs are then checked for package name, clone metadata, version, arm64 native code, signer, and downgrade status before a `PackageInstaller.Session` is committed.
 
@@ -57,7 +57,7 @@ Runtime server lists use only the mirror's cached `servers_v8.json` or `servers_
 
 ## Local Validation
 
-Use Java 17 and an Android SDK with API 36, build-tools 36, and NDK 25.2.9519653. A local debug keystore can be supplied through `DEBUG_KEYSTORE_PATH`, `DEBUG_STORE_PASSWORD`, `DEBUG_KEY_PASSWORD`, and `DEBUG_KEY_ALIAS`. The repository ignores local JKS and password files.
+Use Java 17 and an Android SDK with API 37, build-tools 36, and NDK 25.2.9519653. A local debug keystore can be supplied through `DEBUG_KEYSTORE_PATH`, `DEBUG_STORE_PASSWORD`, `DEBUG_KEY_PASSWORD`, and `DEBUG_KEY_ALIAS`. The repository ignores local JKS and password files.
 
 ```powershell
 .uild-xenon-mobile-debug.bat --no-daemon
@@ -93,7 +93,7 @@ Stable asset names are derived from the tag, variant, slot, and arm64 profile. R
 
 ## Mirror Contract
 
-The HTTP mirror maps these URL shapes to cached files:
+The HTTPS mirror maps these URL shapes to cached files:
 
 ```text
 https://play.mindustry.men/github/raw/<owner>/<repo>/<branch>/<path>
@@ -105,7 +105,7 @@ https://play.mindustry.men/github/repos/Anuken/MindustryServerList/servers_be.js
 
 Catalog responses should be JSON with a short cache lifetime. APK and JAR responses must be direct binary responses with correct `Content-Length`, `Accept-Ranges`, and immutable caching. They must never return an HTML GitHub page.
 
-The primary mirror route is currently HTTP. APK and JAR integrity checks remain mandatory. GitHub is not a runtime fallback source.
+The primary mirror route has been migrated to HTTPS. APK and JAR integrity checks remain mandatory. GitHub is not a runtime fallback source.
 
 ## Release Verification
 
