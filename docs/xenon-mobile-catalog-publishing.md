@@ -177,7 +177,14 @@ http://121.199.60.4/github/repos/Anuken/MindustryServerList/servers_v8.json
 http://121.199.60.4/github/repos/Anuken/MindustryServerList/servers_be.json
 ```
 
-Catalog responses should be JSON with a short cache lifetime. APK and JAR responses must be direct binary responses with correct `Content-Length`, `Accept-Ranges`, and immutable caching. They must never return an HTML GitHub page.
+Catalog responses should be JSON with a short cache lifetime.
+
+The cache is refreshed by the mirror host's own scheduler (`github-cache.timer`, hourly) and it only
+understands catalog URLs whose path is `/github/repos/<owner>/<repo>/releases/download/<tag>/<file>`;
+the host in front of that path may be the deployment IP or the domain. A new release is therefore
+invisible to devices until that job runs, so `check-upstream-readiness.py` reports a `mirror` finding
+while the mirror still serves the previous tag. The mirror keeps only the newest Xenon Mobile tags
+because every release is around 1.2 GB. APK and JAR responses must be direct binary responses with correct `Content-Length`, `Accept-Ranges`, and immutable caching. They must never return an HTML GitHub page.
 
 The mirror keeps its routes stable across the IP and the domain, so rewriting a published URL is only a host change. APK and JAR integrity checks remain mandatory, so a fallback can never change the downloaded bytes. GitHub is the final runtime fallback after all mirror attempts.
 
