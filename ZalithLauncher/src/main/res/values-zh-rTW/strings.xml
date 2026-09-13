@@ -959,7 +959,8 @@
     <string name="about_launcher_project_link">專案連結</string>
     <string name="about_author_github">GitHub 主頁</string>
     <string name="about_community_group">加入交流群</string>
-    <string name="about_sponsor">贊助支持</string>
+    <string name="about_sponsor">加群贊助</string>
+    <string name="about_sponsor_hint">贊助支持請加入 QQ 群並查看群公告</string>
     <string name="about_acknowledgements_title">鳴謝</string>
     <string name="about_acknowledgements_pojav_text">%s 使用了 PojavLauncher 的啟動後端</string>
     <string name="about_acknowledgements_pcl_text">%s 參考了 PCL2 的部分程式碼實作</string>

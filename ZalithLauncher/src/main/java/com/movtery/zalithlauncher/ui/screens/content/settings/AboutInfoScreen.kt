@@ -64,6 +64,7 @@ import com.movtery.zalithlauncher.library.LibraryInfo
 import com.movtery.zalithlauncher.library.libraryData
 import com.movtery.zalithlauncher.path.URL_COMMUNITY
 import com.movtery.zalithlauncher.path.URL_MCMOD
+import com.movtery.zalithlauncher.path.URL_COMMUNITY_GROUP
 import com.movtery.zalithlauncher.path.URL_PROJECT
 import com.movtery.zalithlauncher.path.URL_AUTHOR
 import com.movtery.zalithlauncher.path.URL_WEBLATE
@@ -148,7 +149,7 @@ fun AboutInfoScreen(
                             text = stringResource(R.string.about_acknowledgements_bangbang93_text, BuildKeys.LAUNCHER_SHORT_NAME),
                             button = {
                                 Button(
-                                    onClick = { openLink("https://ifdian.net/a/bangbang93") }
+                                    onClick = { openLink(URL_COMMUNITY_GROUP) }
                                 ) {
                                     Text(text = stringResource(R.string.about_sponsor))
                                 }
@@ -180,7 +181,7 @@ fun AboutInfoScreen(
                             text = stringResource(R.string.about_acknowledgements_mcim_text, BuildKeys.LAUNCHER_SHORT_NAME),
                             button = {
                                 Button(
-                                    onClick = { openLink("https://www.mcimirror.top/sponsor") }
+                                    onClick = { openLink(URL_COMMUNITY_GROUP) }
                                 ) {
                                     Text(text = stringResource(R.string.about_sponsor))
                                 }
@@ -211,6 +212,12 @@ fun AboutInfoScreen(
                             title = stringResource(R.string.about_acknowledgements_weblate_community),
                             text = stringResource(R.string.about_acknowledgements_weblate_community_text),
                             openLink = { openLink(URL_WEBLATE) }
+                        )
+                        Text(
+                            modifier = Modifier.clickable { openLink(URL_COMMUNITY_GROUP) },
+                            text = stringResource(R.string.about_sponsor_hint),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = onItemColor()
                         )
                     }
                 }

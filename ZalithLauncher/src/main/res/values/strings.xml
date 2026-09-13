@@ -1313,7 +1313,8 @@
     <string name="about_launcher_project_link">Project Link</string>
     <string name="about_author_github">GitHub</string>
     <string name="about_community_group">Join the community group</string>
-    <string name="about_sponsor">Sponsorship Support</string>
+    <string name="about_sponsor">Sponsor via QQ group</string>
+    <string name="about_sponsor_hint">To sponsor, join the QQ group and check the group announcement.</string>
     <string name="about_acknowledgements_title">Acknowledgements</string>
     <string name="about_acknowledgements_pojav_text">%s uses the launch backend from PojavLauncher</string>
     <string name="about_acknowledgements_pcl_text">%s references parts of the implementation from PCL2</string>
