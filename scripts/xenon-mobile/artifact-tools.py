@@ -12,7 +12,9 @@ import zipfile
 from pathlib import Path
 
 
-PRIMARY_MIRROR = "https://play.mindustry.men/github"
+# The mindustry.men domains are rejected by the hosting provider's ICP filing filter, so the
+# catalog advertises the mirror by its direct IP (plain HTTP, the app permits cleartext).
+PRIMARY_MIRROR = "http://121.199.60.4/github"
 
 
 def sha256(path: Path) -> str:

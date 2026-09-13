@@ -4,6 +4,9 @@ on:
   push:
     tags:
       - "v*"
+  # The daily upstream sync pushes its tag with the default GITHUB_TOKEN, which does not start
+  # workflow runs, so it starts this workflow explicitly with `gh workflow run --ref <tag>`.
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -18,8 +21,24 @@ env:
   HUB_PACKAGE_NAME: com.xenon.mobile
 
 jobs:
+  guard:
+    name: Require a v* tag ref
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify the triggering ref is a v* tag
+        run: |
+          set -euo pipefail
+          case "${GITHUB_REF_TYPE}:${GITHUB_REF_NAME}" in
+            tag:v*) echo "Releasing ${GITHUB_REF_NAME}" ;;
+            *)
+              echo "::error::Xenon Mobile releases must run for a v* tag, got ${GITHUB_REF_TYPE} ${GITHUB_REF_NAME}"
+              exit 1
+              ;;
+          esac
+
   hub:
     name: Build Hub (arm64)
+    needs: [guard]
     runs-on: ubuntu-latest
     env:
       SIGNING_KEYSTORE_BASE64: ${{ secrets.SIGNING_KEYSTORE_BASE64 }}
@@ -80,22 +99,23 @@ jobs:
 
   clone:
     name: Build ${{ matrix.variant }} slot ${{ matrix.slot }} APK
+    needs: [guard]
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         include:
-          - { variant: vanilla, slot: 1, source_repo: Anuken/Mindustry, source_commit: 20da6a38ab0874b5d971bffede3995efd3da5d70, channel: stable }
-          - { variant: vanilla, slot: 2, source_repo: Anuken/Mindustry, source_commit: 20da6a38ab0874b5d971bffede3995efd3da5d70, channel: stable }
-          - { variant: vanilla, slot: 3, source_repo: Anuken/Mindustry, source_commit: 20da6a38ab0874b5d971bffede3995efd3da5d70, channel: stable }
-          - { variant: vanilla, slot: 4, source_repo: Anuken/Mindustry, source_commit: 20da6a38ab0874b5d971bffede3995efd3da5d70, channel: stable }
-          - { variant: vanilla, slot: 5, source_repo: Anuken/Mindustry, source_commit: 20da6a38ab0874b5d971bffede3995efd3da5d70, channel: stable }
-          - { variant: mindustryx, slot: 1, source_repo: TinyLake/MindustryX, source_commit: 3b894f8518c1a36ec60f1f32af50a8b249d0f060, channel: stable }
-          - { variant: mindustryx, slot: 2, source_repo: TinyLake/MindustryX, source_commit: 3b894f8518c1a36ec60f1f32af50a8b249d0f060, channel: stable }
-          - { variant: mindustryx, slot: 3, source_repo: TinyLake/MindustryX, source_commit: 3b894f8518c1a36ec60f1f32af50a8b249d0f060, channel: stable }
-          - { variant: mindustryx, slot: 4, source_repo: TinyLake/MindustryX, source_commit: 3b894f8518c1a36ec60f1f32af50a8b249d0f060, channel: stable }
-          - { variant: mindustryx, slot: 5, source_repo: TinyLake/MindustryX, source_commit: 3b894f8518c1a36ec60f1f32af50a8b249d0f060, channel: stable }
-          - { variant: be, slot: 1, source_repo: Anuken/Mindustry, source_commit: 20da6a38ab0874b5d971bffede3995efd3da5d70, channel: be }
+          - { variant: vanilla, slot: 1, source_repo: Anuken/Mindustry, source_commit: 89527f879b535b752376d9b935172be576320b59, channel: stable }
+          - { variant: vanilla, slot: 2, source_repo: Anuken/Mindustry, source_commit: 89527f879b535b752376d9b935172be576320b59, channel: stable }
+          - { variant: vanilla, slot: 3, source_repo: Anuken/Mindustry, source_commit: 89527f879b535b752376d9b935172be576320b59, channel: stable }
+          - { variant: vanilla, slot: 4, source_repo: Anuken/Mindustry, source_commit: 89527f879b535b752376d9b935172be576320b59, channel: stable }
+          - { variant: vanilla, slot: 5, source_repo: Anuken/Mindustry, source_commit: 89527f879b535b752376d9b935172be576320b59, channel: stable }
+          - { variant: mindustryx, slot: 1, source_repo: TinyLake/MindustryX, source_commit: dc388e903e3be54b386787785ad5c15d589bea90, channel: stable }
+          - { variant: mindustryx, slot: 2, source_repo: TinyLake/MindustryX, source_commit: dc388e903e3be54b386787785ad5c15d589bea90, channel: stable }
+          - { variant: mindustryx, slot: 3, source_repo: TinyLake/MindustryX, source_commit: dc388e903e3be54b386787785ad5c15d589bea90, channel: stable }
+          - { variant: mindustryx, slot: 4, source_repo: TinyLake/MindustryX, source_commit: dc388e903e3be54b386787785ad5c15d589bea90, channel: stable }
+          - { variant: mindustryx, slot: 5, source_repo: TinyLake/MindustryX, source_commit: dc388e903e3be54b386787785ad5c15d589bea90, channel: stable }
+          - { variant: be, slot: 1, source_repo: Anuken/Mindustry, source_commit: 89527f879b535b752376d9b935172be576320b59, channel: be }
     env:
       SIGNING_KEYSTORE_BASE64: ${{ secrets.SIGNING_KEYSTORE_BASE64 }}
       STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
@@ -263,14 +283,15 @@ jobs:
 
   jar:
     name: Build ${{ matrix.variant }} JAR
+    needs: [guard]
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         include:
-          - { variant: vanilla, source_repo: Anuken/Mindustry, source_commit: 20da6a38ab0874b5d971bffede3995efd3da5d70, channel: stable }
-          - { variant: be, source_repo: Anuken/Mindustry, source_commit: 20da6a38ab0874b5d971bffede3995efd3da5d70, channel: be }
-          - { variant: mindustryx, source_repo: TinyLake/MindustryX, source_commit: 3b894f8518c1a36ec60f1f32af50a8b249d0f060, channel: stable }
+          - { variant: vanilla, source_repo: Anuken/Mindustry, source_commit: 89527f879b535b752376d9b935172be576320b59, channel: stable }
+          - { variant: be, source_repo: Anuken/Mindustry, source_commit: 89527f879b535b752376d9b935172be576320b59, channel: be }
+          - { variant: mindustryx, source_repo: TinyLake/MindustryX, source_commit: dc388e903e3be54b386787785ad5c15d589bea90, channel: stable }
     steps:
       - name: Checkout Xenon Mobile
         uses: actions/checkout@v6

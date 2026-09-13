@@ -9,10 +9,22 @@ Xenon Mobile 是面向 Android 的 Mindustry Hub，管理源码建置的 Vanilla
 Hub 目前读取：
 
 ```text
-https://play.mindustry.men/github/raw/DeterMination-Wind/Xenon-Mobile/main/catalog/xenon-mobile-catalog.json
+http://121.199.60.4/github/raw/DeterMination-Wind/Xenon-Mobile/main/catalog/xenon-mobile-catalog.json
 ```
 
-catalog 和发布档案统一通过 `play.mindustry.men` 的 Xenon 伺服器镜像访问。GitHub Releases 仅作为发布后端，Hub 运行时不再回退访问 GitHub。APK 使用 Android 系统确认页安装，并在启动前校验套件名称、版本、ABI、签名、档案大小和 SHA-256。
+catalog、遊戲產物與伺服器列表優先透過 Xenon 镜像存取，預設使用镜像的直連 IP `http://121.199.60.4/github`——因為 `mindustry.men` 網域會被主機商的 ICP 備案攔截頁阻擋，而同一台機器的 IP 存取正常。建置時可用 `-Pmindustry_mirror=<url>` 指定其他部署；應用程式允許明文流量，因此純 HTTP 端點可用。舊網域作為第二候選，GitHub Releases 仍作為發布後端，且僅在所有镜像都失敗後作為最後一層下載回退。APK 使用 Android 系统确认页安装，并在启动前校验套件名称、版本、ABI、签名、档案大小和 SHA-256。
+
+## 下載來源
+
+所有 Mindustry 資源依下列順序下載：
+
+1. Xenon 镜像，預設 `http://121.199.60.4/github`（建置時可用 `-Pmindustry_mirror=<url>` 覆寫），其次是 `play.mindustry.men` 網域；
+2. 僅當所有镜像都失敗時，回退至 GitHub 來源：
+   - catalog：`https://raw.githubusercontent.com/DeterMination-Wind/Xenon-Mobile/main/catalog/xenon-mobile-catalog.json`，
+   - 發布資產：`https://github.com/DeterMination-Wind/Xenon-Mobile/releases/download/<tag>/<file>`，
+   - 伺服器列表：`https://raw.githubusercontent.com/Anuken/MindustryServerList/main/servers_v8.json` 與 `servers_be.json`。
+
+下載完成後一律校驗檔案大小與 SHA-256，因此 GitHub 回退不會改變最終產物。
 
 ## 本地建置
 

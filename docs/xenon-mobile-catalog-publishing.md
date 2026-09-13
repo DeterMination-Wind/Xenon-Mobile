@@ -3,10 +3,10 @@
 Xenon Mobile downloads Mindustry artifacts from the catalog committed at:
 
 ```text
-https://play.mindustry.men/github/raw/DeterMination-Wind/Xenon-Mobile/main/catalog/xenon-mobile-catalog.json
+http://121.199.60.4/github/raw/DeterMination-Wind/Xenon-Mobile/main/catalog/xenon-mobile-catalog.json
 ```
 
-The catalog and artifact URLs use the Xenon mirror hosted at `play.mindustry.men`. GitHub Releases is the publishing backend only; the Hub does not fall back to GitHub at runtime. Older catalogs may still contain canonical GitHub URLs, which the Hub converts to the fixed mirror without retaining the GitHub URL as a download candidate.
+The Xenon mirror is reached through its direct IP `http://121.199.60.4/github` as the first download source. The `mindustry.men` domains answer the hosting provider's ICP filing rejection page (`Non-compliance ICP Filing`), so the Hub defaults to the IP; the domain is kept as the second candidate and the base is configurable at build time through `-Pmindustry_mirror=<url>`. The Android app permits cleartext traffic, which is what makes the plain HTTP IP endpoint usable. GitHub Releases is the publishing backend and the last-resort fallback: the Hub appends the canonical GitHub URL for every resource and only requests it after every configured mirror attempt failed. Older catalogs may still contain canonical GitHub or domain URLs, which the Hub rewrites to the configured mirror while still keeping the GitHub URL as the final candidate.
 
 ## Runtime Contract
 
@@ -18,6 +18,20 @@ The Hub validates the catalog before showing an artifact. A valid v1 artifact co
 - mirror or canonical HTTPS `urls`, positive `size`, a 64-character `sha256`, and `nativeProfile = "arm64-v8a"`.
 
 The current catalog contains the 14 published game artifacts: 11 APK slots and 3 JAR variants.
+
+### Runtime Source Order
+
+For the catalog, every artifact and both server lists the Hub builds an ordered candidate list:
+
+```text
+1. configured Xenon mirror, default http://121.199.60.4/github
+2. the play.mindustry.men domain (currently rejected by the ICP filing filter)
+3. canonical GitHub source (last resort, HTTPS only)
+```
+
+Catalog manifest: `https://raw.githubusercontent.com/DeterMination-Wind/Xenon-Mobile/main/catalog/xenon-mobile-catalog.json`
+Release asset: `https://github.com/DeterMination-Wind/Xenon-Mobile/releases/download/<tag>/<file>`
+Server lists: `https://raw.githubusercontent.com/Anuken/MindustryServerList/main/servers_v8.json` and `servers_be.json`
 
 Downloaded files are written below the app-owned Mindustry catalog cache. Size and SHA-256 are checked both after download and before use. APKs are then checked for package name, clone metadata, version, arm64 native code, signer, and downgrade status before a `PackageInstaller.Session` is committed.
 
@@ -47,13 +61,62 @@ The catalog contains only the newest artifact for each identity. Previous versio
 `game-source-lock.json` is checked by `validateGameSourceLock`:
 
 ```text
-Anuken/Mindustry     20da6a38ab0874b5d971bffede3995efd3da5d70
-TinyLake/MindustryX  3b894f8518c1a36ec60f1f32af50a8b249d0f060
+Anuken/Mindustry     89527f879b535b752376d9b935172be576320b59
+TinyLake/MindustryX  dc388e903e3be54b386787785ad5c15d589bea90
 Anuken/MindustryServerList
-                     f297264dc24621753bc008a18e17b582fa5e3f65
+                     10c099d68349bfde95ec60aea1b76dc7135e55bd
 ```
 
-Runtime server lists use only the mirror's cached `servers_v8.json` or `servers_be.json` route. The lock above is for reproducible CI builds and parser fixtures.
+Runtime server lists prefer the mirror's cached `servers_v8.json` or `servers_be.json` route and fall back to the canonical GitHub raw file. The lock above is for reproducible CI builds and parser fixtures.
+
+## Upstream Readiness
+
+Clone slots always follow the newest upstream release. `.github/workflows/upstream_sync_ci.yml`
+runs **daily at 03:00 UTC** (and on demand) and does the whole follow-up in one job:
+
+1. resolve the newest `Anuken/Mindustry`, `TinyLake/MindustryX` and `Anuken/MindustryServerList`
+   commits with the GitHub CLI;
+2. rewrite the pins in `game-source-lock.json`, `build.gradle.kts` and
+   `.github/workflows/release_ci.yml`;
+3. verify the refreshed pins, commit them and push `main`;
+4. call `scripts/xenon-mobile/tag-release.py`, which tags the next
+   `v0.0.0-ci-<date>-r<N>` release **only** when the published catalog artifacts are still built
+   from an older source commit, and then starts `release_ci.yml`.
+
+Step 4 needs `gh workflow run --ref <tag>` because a tag pushed with the default `GITHUB_TOKEN`
+does not start a new workflow run. `release_ci.yml` therefore also accepts `workflow_dispatch`, and
+its first job refuses any ref that is not a `v*` tag so a manual UI run cannot publish a branch-named
+release.
+
+`tag-release.py` also refuses to tag while an earlier tag has not reached the catalog yet (a release
+in flight or failed), which keeps the daily job idempotent. A failed release therefore needs a manual
+`gh run rerun` or a `--force` dispatch; the readiness report keeps showing the `published` gap until
+the catalog catches up.
+
+Everything can be inspected or run locally:
+
+```powershell
+python scripts/xenon-mobile/check-upstream-readiness.py
+python scripts/xenon-mobile/update-upstream-pins.py            # dry run
+python scripts/xenon-mobile/update-upstream-pins.py --write    # apply
+python scripts/xenon-mobile/tag-release.py                     # dry run
+.\gradlew validateXenonMobileRelease
+```
+
+`check-upstream-readiness.py` compares the newest upstream commits with the source lock, verifies
+that the lock, `build.gradle.kts` and the release workflow pin the same commits, and checks that the
+newest Xenon Mobile release plus the catalog on `main` expose every artifact with a matching size
+and SHA-256. It exits `1` when an upstream release is not yet built into a Xenon Mobile release.
+
+Findings use the scopes `pins` (the three files agree), the variant names `vanilla` / `be` /
+`mindustryx` (upstream versus the pin), `serverList` (server list fixture), `catalog`, `release`
+(release and catalog asset integrity) and `published` (the artifacts a device downloads were built
+from the pinned commits). `published` stays a gap until a new release is published, so the daily
+sync gates only on the other scopes:
+
+```powershell
+python scripts/xenon-mobile/check-upstream-readiness.py --ignore-scopes published
+```
 
 ## Local Validation
 
@@ -78,7 +141,8 @@ KEY_PASSWORD
 RELEASE_KEY_ALIAS (optional; defaults to movtery_zalith)
 ```
 
-The workflow:
+The workflow runs for a `v*` tag (or an explicit `gh workflow run --ref <tag>`), and its first job
+refuses any other ref. It then:
 
 1. Builds the signed arm64 Hub APK.
 2. Checks out each locked game commit and builds the 11 arm64 clone APKs with the Xenon overlay.
@@ -93,30 +157,30 @@ Stable asset names are derived from the tag, variant, slot, and arm64 profile. R
 
 ## Mirror Contract
 
-The HTTPS mirror maps these URL shapes to cached files:
+The mirror maps these URL shapes to cached files. The direct IP serves them over HTTP (`http://121.199.60.4/github`); the `play.mindustry.men` domain serves the same routes over HTTPS but is currently answered with the ICP filing rejection page:
 
 ```text
-https://play.mindustry.men/github/raw/<owner>/<repo>/<branch>/<path>
-https://play.mindustry.men/github/repos/<owner>/<repo>/releases/download/<tag>/<file>
-https://play.mindustry.men/github/repos/<owner>/<repo>/releases/latest
-https://play.mindustry.men/github/repos/Anuken/MindustryServerList/servers_v8.json
-https://play.mindustry.men/github/repos/Anuken/MindustryServerList/servers_be.json
+http://121.199.60.4/github/raw/<owner>/<repo>/<branch>/<path>
+http://121.199.60.4/github/repos/<owner>/<repo>/releases/download/<tag>/<file>
+http://121.199.60.4/github/repos/<owner>/<repo>/releases/latest
+http://121.199.60.4/github/repos/Anuken/MindustryServerList/servers_v8.json
+http://121.199.60.4/github/repos/Anuken/MindustryServerList/servers_be.json
 ```
 
 Catalog responses should be JSON with a short cache lifetime. APK and JAR responses must be direct binary responses with correct `Content-Length`, `Accept-Ranges`, and immutable caching. They must never return an HTML GitHub page.
 
-The primary mirror route has been migrated to HTTPS. APK and JAR integrity checks remain mandatory. GitHub is not a runtime fallback source.
+The mirror keeps its routes stable across the IP and the domain, so rewriting a published URL is only a host change. APK and JAR integrity checks remain mandatory, so a fallback can never change the downloaded bytes. GitHub is the final runtime fallback after all mirror attempts.
 
 ## Release Verification
 
 After the release and mirror cache have refreshed, verify the catalog and one artifact from a device-accessible mirror endpoint:
 
 ```powershell
-$catalog = "https://play.mindustry.men/github/raw/DeterMination-Wind/Xenon-Mobile/main/catalog/xenon-mobile-catalog.json"
+$catalog = "http://121.199.60.4/github/raw/DeterMination-Wind/Xenon-Mobile/main/catalog/xenon-mobile-catalog.json"
 curl.exe -L -I $catalog
 curl.exe -L $catalog
 
-$asset = "https://play.mindustry.men/github/repos/DeterMination-Wind/Xenon-Mobile/releases/download/vX.Y.Z/xenon-mobile-vanilla-slot1-vX.Y.Z-arm64.apk"
+$asset = "http://121.199.60.4/github/repos/DeterMination-Wind/Xenon-Mobile/releases/download/vX.Y.Z/xenon-mobile-vanilla-slot1-vX.Y.Z-arm64.apk"
 curl.exe -L -r 0-1023 -D .\range-headers.txt -o .\range-byte.bin $asset
 curl.exe -L -o .\slot1.apk $asset
 (Get-Item .\slot1.apk).Length

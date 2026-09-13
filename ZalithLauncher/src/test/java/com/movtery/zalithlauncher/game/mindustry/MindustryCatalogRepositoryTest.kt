@@ -26,48 +26,22 @@ import java.io.IOException
 import java.nio.file.Files
 
 class MindustryCatalogRepositoryTest {
-    @Test
-    fun serverListRepositoryUsesServerMirrorOnly() = runBlocking {
-        val cacheRoot = Files.createTempDirectory("xenon-server-list").toFile()
-        val attemptedUrls = mutableListOf<String>()
-        try {
-            val result = MindustryServerListRepository(cacheRoot).load(
-                variant = MindustryVariant.VANILLA,
-                forceRefresh = true
-            ) { url ->
-                attemptedUrls += url
-                "[]"
-            }
+    private val mirrorCatalogUrl =
+        "${MindustryCatalog.PRIMARY_SERVER_MIRROR}/raw/DeterMination-Wind/Xenon-Mobile/main/catalog/xenon-mobile-catalog.json"
+    private val domainCatalogUrl =
+        "${MindustryCatalog.DOMAIN_SERVER_MIRROR}/raw/DeterMination-Wind/Xenon-Mobile/main/catalog/xenon-mobile-catalog.json"
+    private val githubCatalogUrl =
+        "https://raw.githubusercontent.com/DeterMination-Wind/Xenon-Mobile/main/catalog/xenon-mobile-catalog.json"
+    private val mirrorServerListUrl =
+        "${MindustryCatalog.PRIMARY_SERVER_MIRROR}/repos/Anuken/MindustryServerList/servers_v8.json"
+    private val domainServerListUrl =
+        "${MindustryCatalog.DOMAIN_SERVER_MIRROR}/repos/Anuken/MindustryServerList/servers_v8.json"
+    private val githubServerListUrl =
+        "https://raw.githubusercontent.com/Anuken/MindustryServerList/main/servers_v8.json"
 
-            assertEquals(
-                "https://play.mindustry.men/github/repos/Anuken/MindustryServerList/servers_v8.json",
-                result.sourceUrl
-            )
-            assertEquals(listOf(result.sourceUrl), attemptedUrls)
-        } finally {
-            cacheRoot.deleteRecursively()
-        }
-    }
-
-    @Test
-    fun fetchManifestRejectsGithubFallbackSource() = runBlocking {
-        val mirror = MindustryCatalog.defaultManifestUrls().single()
-        val accepted = runCatching {
-            MindustryCatalogRepository.fetchManifest(
-                urls = listOf(mirror, "https://raw.githubusercontent.com/DeterMination-Wind/Xenon-Mobile/main/catalog/xenon-mobile-catalog.json")
-            ) { error("GitHub must never be requested") }
-        }
-
-        assertTrue(accepted.isFailure)
-    }
-
-    @Test
-    fun fetchManifestReturnsSuccessFromTheServerMirror() = runBlocking {
+    private fun manifestJson(): String {
         val sha = "a".repeat(64)
-        val result = MindustryCatalogRepository.fetchManifest(
-            urls = listOf(MindustryCatalog.defaultManifestUrls().single())
-        ) {
-            """
+        return """
             {
               "schemaVersion": 1,
               "artifacts": [
@@ -89,42 +63,135 @@ class MindustryCatalogRepositoryTest {
                 }
               ]
             }
-            """.trimIndent()
+        """.trimIndent()
+    }
+
+    @Test
+    fun defaultManifestSourcesTryTheIpMirrorThenTheDomainThenGithub() {
+        assertEquals(
+            listOf(mirrorCatalogUrl, domainCatalogUrl, githubCatalogUrl),
+            MindustryCatalog.defaultManifestUrls()
+        )
+    }
+
+    @Test
+    fun serverListRepositoryPrefersTheIpMirror() = runBlocking {
+        val cacheRoot = Files.createTempDirectory("xenon-server-list").toFile()
+        val attemptedUrls = mutableListOf<String>()
+        try {
+            val result = MindustryServerListRepository(cacheRoot).load(
+                variant = MindustryVariant.VANILLA,
+                forceRefresh = true
+            ) { url ->
+                attemptedUrls += url
+                "[]"
+            }
+
+            assertEquals(mirrorServerListUrl, result.sourceUrl)
+            assertEquals(listOf(mirrorServerListUrl), attemptedUrls)
+        } finally {
+            cacheRoot.deleteRecursively()
+        }
+    }
+
+    @Test
+    fun serverListRepositoryFallsBackToGithub() = runBlocking {
+        val cacheRoot = Files.createTempDirectory("xenon-server-list-fallback").toFile()
+        val attemptedUrls = mutableListOf<String>()
+        try {
+            val result = MindustryServerListRepository(cacheRoot).load(
+                variant = MindustryVariant.VANILLA,
+                forceRefresh = true
+            ) { url ->
+                attemptedUrls += url
+                if (!url.startsWith("https://raw.githubusercontent.com/")) throw IOException("mirror is down")
+                "[]"
+            }
+
+            assertEquals(githubServerListUrl, result.sourceUrl)
+            assertEquals(listOf(mirrorServerListUrl, domainServerListUrl, githubServerListUrl), attemptedUrls)
+        } finally {
+            cacheRoot.deleteRecursively()
+        }
+    }
+
+    @Test
+    fun fetchManifestAcceptsTheGithubFallbackSource() = runBlocking {
+        val accepted = runCatching {
+            MindustryCatalogRepository.fetchManifest(
+                urls = listOf(mirrorCatalogUrl, githubCatalogUrl)
+            ) { manifestJson() }
+        }
+
+        assertTrue(accepted.isSuccess)
+        val result = accepted.getOrThrow() as MindustryCatalogLoadResult.Success
+        assertEquals(mirrorCatalogUrl, result.sourceUrl)
+        assertEquals(listOf(mirrorCatalogUrl), result.attemptedUrls)
+    }
+
+    @Test
+    fun fetchManifestFallsBackToGithubWhenEveryMirrorFails() = runBlocking {
+        val result = MindustryCatalogRepository.fetchManifest(
+            urls = listOf(mirrorCatalogUrl, domainCatalogUrl, githubCatalogUrl)
+        ) { url ->
+            if (url != githubCatalogUrl) throw IOException("mirror is down")
+            manifestJson()
         }
 
         assertTrue(result is MindustryCatalogLoadResult.Success)
         result as MindustryCatalogLoadResult.Success
-        assertEquals(MindustryCatalog.defaultManifestUrls().single(), result.sourceUrl)
-        assertEquals(listOf(result.sourceUrl), result.attemptedUrls)
+        assertEquals(githubCatalogUrl, result.sourceUrl)
+        assertEquals(listOf(mirrorCatalogUrl, domainCatalogUrl, githubCatalogUrl), result.attemptedUrls)
+    }
+
+    @Test
+    fun fetchManifestRejectsUnknownSources() = runBlocking {
+        val rejected = runCatching {
+            MindustryCatalogRepository.fetchManifest(
+                urls = listOf("https://mirror.example.com/catalog.json")
+            ) { error("Unknown sources must never be requested") }
+        }
+
+        assertTrue(rejected.isFailure)
+    }
+
+    @Test
+    fun fetchManifestReturnsSuccessFromTheServerMirror() = runBlocking {
+        val result = MindustryCatalogRepository.fetchManifest(
+            urls = listOf(mirrorCatalogUrl)
+        ) { manifestJson() }
+
+        assertTrue(result is MindustryCatalogLoadResult.Success)
+        result as MindustryCatalogLoadResult.Success
+        assertEquals(mirrorCatalogUrl, result.sourceUrl)
         assertEquals(1, result.manifest.artifacts.size)
     }
 
     @Test
     fun fetchManifestReturnsEmptyForPublishedEmptyCatalog() = runBlocking {
         val result = MindustryCatalogRepository.fetchManifest(
-            urls = listOf(MindustryCatalog.defaultManifestUrls().single())
+            urls = listOf(mirrorCatalogUrl)
         ) {
             """{"schemaVersion":1,"artifacts":[]}"""
         }
 
         assertTrue(result is MindustryCatalogLoadResult.Empty)
         result as MindustryCatalogLoadResult.Empty
-        assertEquals(MindustryCatalog.defaultManifestUrls().single(), result.sourceUrl)
+        assertEquals(mirrorCatalogUrl, result.sourceUrl)
         assertEquals(0, result.manifest.artifacts.size)
     }
 
     @Test
-    fun fetchManifestReportsOnlyTheMirrorWhenItFails() = runBlocking {
-        val mirror = MindustryCatalog.defaultManifestUrls().single()
+    fun fetchManifestReportsEveryAttemptedSource() = runBlocking {
         val result = MindustryCatalogRepository.fetchManifest(
-            urls = listOf(mirror)
+            urls = listOf(mirrorCatalogUrl, domainCatalogUrl, githubCatalogUrl)
         ) { url ->
             throw IOException("$url failed")
         }
 
         assertTrue(result is MindustryCatalogLoadResult.Error)
         result as MindustryCatalogLoadResult.Error
-        assertEquals(listOf(mirror), result.attemptedUrls)
-        assertTrue(result.message.contains("$mirror failed"))
+        assertEquals(listOf(mirrorCatalogUrl, domainCatalogUrl, githubCatalogUrl), result.attemptedUrls)
+        assertTrue(result.message.contains("$githubCatalogUrl failed"))
     }
 }

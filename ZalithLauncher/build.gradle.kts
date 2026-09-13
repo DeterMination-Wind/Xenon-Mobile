@@ -37,6 +37,17 @@ val releaseKeyAlias = System.getenv("RELEASE_KEY_ALIAS")?.trim().orEmpty().ifBla
 
 val projectArch: String = System.getProperty("arch", "arm64")
 
+/**
+ * Primary Xenon mirror base, reached by the mirror's direct IP because the mindustry.men domains
+ * are rejected by the hosting provider's ICP filing filter. Override with
+ * -Pmindustry_mirror=<url>; the Android app permits cleartext traffic so plain HTTP stays usable.
+ * Canonical GitHub always remains the last-resort download source.
+ */
+val mindustryMirrorBase: String = (project.findProperty("mindustry_mirror") as? String)
+    ?.trim()
+    ?.takeIf { it.isNotBlank() }
+    ?: "http://121.199.60.4/github"
+
 fun abiForArch(arch: String): String? = when (arch) {
     "all" -> null
     "arm" -> "armeabi-v7a"
@@ -204,6 +215,7 @@ buildKeys {
     string("LAUNCHER_IDENTIFIER", launcherName, true)
     string("LAUNCHER_SHORT_NAME", launcherShortName, true)
     string("URL_HOME", launcherUrl, true)
+    string("MINDUSTRY_MIRROR_BASE", mindustryMirrorBase, true)
     string("CURSEFORGE_API", getKeyFromLocal("CURSEFORGE_API_KEY", ".curseforge_api.txt", defaultCurseForgeApiKey), true)
     string("BUILD_ARCH", projectArch)
 }

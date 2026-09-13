@@ -52,8 +52,8 @@ object MindustryCatalogRepository {
         fetcher: suspend (String) -> String = ::fetchStringFromUrl
     ): MindustryCatalogLoadResult {
         require(urls.isNotEmpty()) { "Catalog URL list must not be empty." }
-        require(urls.all(MindustryCatalog::isPrimaryMirrorUrl)) {
-            "Xenon catalog sources must use the configured server mirror."
+        require(urls.all(MindustryCatalog::isAllowedCatalogSource)) {
+            "Xenon catalog sources must use the configured server mirror or the canonical GitHub repository."
         }
 
         val attemptedUrls = mutableListOf<String>()

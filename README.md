@@ -9,10 +9,22 @@ Xenon Mobile is an Android Hub for source-built Mindustry variants. It manages V
 The Hub reads the current artifact catalog from:
 
 ```text
-https://play.mindustry.men/github/raw/DeterMination-Wind/Xenon-Mobile/main/catalog/xenon-mobile-catalog.json
+http://121.199.60.4/github/raw/DeterMination-Wind/Xenon-Mobile/main/catalog/xenon-mobile-catalog.json
 ```
 
-The catalog and release downloads are served through the Xenon mirror at `play.mindustry.men`. GitHub Releases remains the publishing backend, but the Hub does not use GitHub as a runtime download fallback. APK installation uses the Android system confirmation flow and verifies package identity, version, ABI, signature, size, and SHA-256 before launch.
+The catalog, artifacts and server lists are served through the Xenon mirror first, which defaults to the mirror's direct IP `http://121.199.60.4/github` because the `mindustry.men` domains answer the hosting provider's ICP filing rejection page. A build can target another deployment with `-Pmindustry_mirror=<url>`; the app permits cleartext traffic so a plain HTTP endpoint works. The legacy domain stays as the second candidate and GitHub Releases remains the last-resort download source used only after every mirror fails. APK installation uses the Android system confirmation flow and verifies package identity, version, ABI, signature, size, and SHA-256 before launch.
+
+## Download Sources
+
+Every Mindustry resource is downloaded in this order:
+
+1. the Xenon mirror, by default `http://121.199.60.4/github` (override with `-Pmindustry_mirror=<url>`), then the `play.mindustry.men` domain;
+2. the canonical GitHub source, only when every mirror attempt fails:
+   - catalog: `https://raw.githubusercontent.com/DeterMination-Wind/Xenon-Mobile/main/catalog/xenon-mobile-catalog.json`,
+   - release assets: `https://github.com/DeterMination-Wind/Xenon-Mobile/releases/download/<tag>/<file>`,
+   - server lists: `https://raw.githubusercontent.com/Anuken/MindustryServerList/main/servers_v8.json` and `servers_be.json`.
+
+Size and SHA-256 are always verified before an artifact is installed or launched, so the GitHub fallback cannot change the bytes.
 
 ## Development Build
 

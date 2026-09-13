@@ -1,0 +1,120 @@
+name: Xenon Upstream Sync
+
+on:
+  workflow_dispatch:
+    inputs:
+      write:
+        description: "Commit refreshed pins to main and tag the release"
+        type: boolean
+        default: true
+      force_tag:
+        description: "Tag a release even when the pins are already current"
+        type: boolean
+        default: false
+  schedule:
+    # Daily: the version-isolation clone slots must follow the newest Mindustry releases so a
+    # v* tag never builds a stale upstream. The mirror stays the first download source and
+    # GitHub remains the last-resort runtime fallback.
+    - cron: "0 3 * * *"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: xenon-upstream-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    name: Sync upstream source pins
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v6
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Report readiness before syncing
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set +e
+          output="$(python3 scripts/xenon-mobile/check-upstream-readiness.py)"
+          printf '%s\n' "$output"
+          {
+            echo "### Readiness before sync"
+            echo '```text'
+            printf '%s\n' "$output"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit 0
+
+      - name: Refresh the upstream pins
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          python3 scripts/xenon-mobile/update-upstream-pins.py --write | tee "$RUNNER_TEMP/sync.log"
+          {
+            echo "### Upstream pin sync"
+            echo '```text'
+            cat "$RUNNER_TEMP/sync.log"
+            echo '```'
+            git --no-pager diff --stat
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Verify the refreshed pins
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set +e
+          # "published" tracks whether the newest release still needs a rebuild; publishing is the
+          # job of the tagging step below, so it must not block the pin sync.
+          output="$(python3 scripts/xenon-mobile/check-upstream-readiness.py --ignore-scopes published)"
+          code=$?
+          set -e
+          printf '%s\n' "$output"
+          # exit code 2 only means some gh data was unavailable; an actual gap (1) blocks the sync.
+          if [ "$code" -eq 1 ]; then
+            echo "::error::refreshed pins still leave an upstream gap"
+            exit 1
+          fi
+
+      - name: Commit and push to main
+        id: commit
+        if: github.event_name == 'schedule' || inputs.write
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "Upstream pins are already current"
+            exit 0
+          fi
+          summary="$(grep '^upstream ' "$RUNNER_TEMP/sync.log" | sed 's/^upstream //' | tr '\n' ';' || true)"
+          git add game-source-lock.json build.gradle.kts .github/workflows/release_ci.yml
+          git commit -m "chore(xenon): sync upstream Mindustry pins" -m "${summary}"
+          git push origin HEAD:main
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+
+      - name: Tag the next release
+        if: steps.commit.outputs.changed == 'true' || inputs.force_tag == true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          force=""
+          if [ "${{ inputs.force_tag }}" = "true" ]; then
+            force="--force"
+          fi
+          # tag-release.py only tags when the catalog artifacts are older than the pinned commits,
+          # and it skips while an earlier tag has not reached the catalog yet.
+          python3 scripts/xenon-mobile/tag-release.py --write --dispatch $force | tee "$RUNNER_TEMP/tag.log"
+          {
+            echo "### Release tag"
+            echo '```text'
+            cat "$RUNNER_TEMP/tag.log"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"

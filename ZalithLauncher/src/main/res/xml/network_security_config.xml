@@ -1,4 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  The Xenon mirror may be deployed behind a direct IP address or a plain HTTP endpoint,
+  so cleartext traffic stays permitted for every destination, including bare IPs.
+  GitHub remains the last-resort fallback source and is always HTTPS.
+-->
 <network-security-config xmlns:tools="http://schemas.android.com/tools">
     <base-config
         cleartextTrafficPermitted="true"

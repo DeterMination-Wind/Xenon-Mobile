@@ -307,8 +307,8 @@ class MindustryServerListRepository(
 
         var lastError: Throwable? = null
         for (url in sourceUrls(variant)) {
-            require(MindustryCatalog.isPrimaryMirrorUrl(url)) {
-                "Server list source must use the configured Xenon mirror: $url"
+            require(MindustryCatalog.isAllowedCatalogSource(url)) {
+                "Server list source must use the configured Xenon mirror or the canonical GitHub repository: $url"
             }
             try {
                 val entries = MindustryServerListParser.parse(fetcher(url))

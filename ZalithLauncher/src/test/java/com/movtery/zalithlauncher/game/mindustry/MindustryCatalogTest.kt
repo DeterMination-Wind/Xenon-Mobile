@@ -19,10 +19,15 @@
 package com.movtery.zalithlauncher.game.mindustry
 
 import junit.framework.TestCase.assertEquals
+import junit.framework.TestCase.assertFalse
 import junit.framework.TestCase.assertTrue
 import org.junit.Test
 
 class MindustryCatalogTest {
+    private val primaryMirror = MindustryCatalog.PRIMARY_SERVER_MIRROR
+    private val domainMirror = MindustryCatalog.DOMAIN_SERVER_MIRROR
+    private val githubJarUrl = "https://github.com/Anuken/Mindustry/releases/download/v146/Mindustry.jar"
+
     @Test
     fun parsesArm64CatalogArtifacts() {
         val sha = "a".repeat(64)
@@ -40,7 +45,7 @@ class MindustryCatalogTest {
                   "build": 146,
                   "buildType": "stable",
                   "javaVersion": 17,
-                  "urls": ["https://github.com/Anuken/Mindustry/releases/download/v146/Mindustry.jar"],
+                  "urls": ["$githubJarUrl"],
                   "sha256": "$sha",
                   "size": 42,
                   "nativeProfile": "arm64-v8a",
@@ -83,29 +88,83 @@ class MindustryCatalogTest {
     }
 
     @Test
-    fun mirrorUrlsNeverIncludeGithubFallback() {
-        val urls = MindustryCatalog.mirrorUrls(
-            "https://github.com/Anuken/Mindustry/releases/download/v146/Mindustry.jar"
-        )
+    fun defaultMirrorIsTheDirectIpAndTheDomainStaysSecondary() {
+        assertEquals("http://121.199.60.4/github", MindustryCatalog.DEFAULT_SERVER_MIRROR)
+
+        val bases = MindustryCatalog.defaultMirrors.sortedBy { it.priority }.map { it.baseUrl }
+        assertEquals(primaryMirror, bases.first())
+        assertEquals(domainMirror, bases.last())
+        assertTrue(MindustryCatalog.isCatalogUrl(primaryMirror))
+        assertTrue(MindustryCatalog.isPrimaryMirrorUrl("$primaryMirror/repos/Anuken/Mindustry/releases/download/v146/Mindustry.jar"))
+    }
+
+    @Test
+    fun githubUrlKeepsTheMirrorsFirstAndGithubLast() {
+        val urls = MindustryCatalog.downloadCandidateUrls(githubJarUrl)
 
         assertEquals(
-            listOf("https://play.mindustry.men/github/repos/Anuken/Mindustry/releases/download/v146/Mindustry.jar"),
+            listOf(
+                "$primaryMirror/repos/Anuken/Mindustry/releases/download/v146/Mindustry.jar",
+                "$domainMirror/repos/Anuken/Mindustry/releases/download/v146/Mindustry.jar",
+                githubJarUrl
+            ),
             urls
         )
     }
 
     @Test
-    fun defaultManifestUsesMirrorOnly() {
+    fun publishedMirrorUrlStillGetsEveryOtherMirrorAndTheGithubFallback() {
+        val published = "$domainMirror/repos/DeterMination-Wind/Xenon-Mobile/releases/download/v1/x.apk"
+        val urls = MindustryCatalog.downloadCandidateUrls(published)
+
+        assertEquals(
+            listOf(
+                "$primaryMirror/repos/DeterMination-Wind/Xenon-Mobile/releases/download/v1/x.apk",
+                published,
+                "https://github.com/DeterMination-Wind/Xenon-Mobile/releases/download/v1/x.apk"
+            ),
+            urls
+        )
+    }
+
+    @Test
+    fun mirrorRoutesMapBackToCanonicalGithubUrls() {
+        assertEquals(
+            "https://github.com/DeterMination-Wind/Xenon-Mobile/releases/download/v1/x.apk",
+            MindustryCatalog.githubFallbackUrl(
+                "$primaryMirror/repos/DeterMination-Wind/Xenon-Mobile/releases/download/v1/x.apk"
+            )
+        )
+        assertEquals(
+            "https://raw.githubusercontent.com/DeterMination-Wind/Xenon-Mobile/main/catalog/xenon-mobile-catalog.json",
+            MindustryCatalog.githubFallbackUrl(
+                "$primaryMirror/raw/DeterMination-Wind/Xenon-Mobile/main/catalog/xenon-mobile-catalog.json"
+            )
+        )
+        assertEquals(
+            "https://api.github.com/repos/DeterMination-Wind/Xenon-Mobile/releases/latest",
+            MindustryCatalog.githubFallbackUrl(
+                "$primaryMirror/repos/DeterMination-Wind/Xenon-Mobile/releases/latest"
+            )
+        )
+    }
+
+    @Test
+    fun defaultManifestUsesMirrorsThenGithubFallback() {
         val urls = MindustryCatalog.defaultManifestUrls()
 
         assertEquals(
-            listOf("https://play.mindustry.men/github/raw/DeterMination-Wind/Xenon-Mobile/main/catalog/xenon-mobile-catalog.json"),
+            listOf(
+                "$primaryMirror/raw/DeterMination-Wind/Xenon-Mobile/main/catalog/xenon-mobile-catalog.json",
+                "$domainMirror/raw/DeterMination-Wind/Xenon-Mobile/main/catalog/xenon-mobile-catalog.json",
+                "https://raw.githubusercontent.com/DeterMination-Wind/Xenon-Mobile/main/catalog/xenon-mobile-catalog.json"
+            ),
             urls
         )
     }
 
     @Test
-    fun artifactUrlsUseServerMirrorOnly() {
+    fun artifactUrlsUseMirrorsThenGithubFallback() {
         val sha = "a".repeat(64)
         val catalog = MindustryCatalog.parse(
             """
@@ -113,8 +172,8 @@ class MindustryCatalogTest {
               "schemaVersion": 1,
               "mirrors": [
                 {
-                  "id": "mirror",
-                  "baseUrl": "https://play.mindustry.men/github",
+                  "id": "xenon-domain",
+                  "baseUrl": "$domainMirror",
                   "priority": 0
                 }
               ],
@@ -127,7 +186,7 @@ class MindustryCatalogTest {
                   "versionName": "v146",
                   "build": 146,
                   "buildType": "stable",
-                  "urls": ["https://github.com/Anuken/Mindustry/releases/download/v146/Mindustry.jar"],
+                  "urls": ["$githubJarUrl"],
                   "sha256": "$sha",
                   "size": 42,
                   "nativeProfile": "arm64-v8a",
@@ -143,19 +202,42 @@ class MindustryCatalogTest {
         val urls = MindustryCatalog.artifactDownloadUrls(catalog.artifacts.single(), catalog)
 
         assertEquals(
-            listOf("https://play.mindustry.men/github/repos/Anuken/Mindustry/releases/download/v146/Mindustry.jar"),
+            listOf(
+                "$primaryMirror/repos/Anuken/Mindustry/releases/download/v146/Mindustry.jar",
+                "$domainMirror/repos/Anuken/Mindustry/releases/download/v146/Mindustry.jar",
+                githubJarUrl
+            ),
             urls
         )
     }
 
     @Test
-    fun serverListSourcesUseConfiguredMirrorOnly() {
+    fun serverListSourcesUseMirrorsThenGithubFallback() {
         val canonical = "https://raw.githubusercontent.com/Anuken/MindustryServerList/main/servers_v8.json"
         val urls = MindustryCatalog.serverListUrls(canonical)
 
         assertEquals(
-            listOf("https://play.mindustry.men/github/repos/Anuken/MindustryServerList/servers_v8.json"),
+            listOf(
+                "$primaryMirror/repos/Anuken/MindustryServerList/servers_v8.json",
+                "$domainMirror/repos/Anuken/MindustryServerList/servers_v8.json",
+                canonical
+            ),
             urls
         )
+    }
+
+    @Test
+    fun cleartextDirectIpMirrorsStayAllowed() {
+        val directIp = "http://192.168.1.10:8080/github/repos/X/Y/releases/download/v1/x.apk"
+
+        assertTrue(MindustryCatalog.isCatalogUrl(directIp))
+        assertTrue(MindustryCatalog.isAllowedCatalogSource(directIp))
+        assertTrue(MindustryCatalog.isAllowedCatalogSource(MindustryCatalog.PRIMARY_SERVER_MIRROR))
+        assertTrue(
+            MindustryCatalog.isAllowedCatalogSource(
+                "https://raw.githubusercontent.com/DeterMination-Wind/Xenon-Mobile/main/catalog/xenon-mobile-catalog.json"
+            )
+        )
+        assertFalse(MindustryCatalog.isAllowedCatalogSource("https://mirror.example.com/repos/X/Y/x.apk"))
     }
 }

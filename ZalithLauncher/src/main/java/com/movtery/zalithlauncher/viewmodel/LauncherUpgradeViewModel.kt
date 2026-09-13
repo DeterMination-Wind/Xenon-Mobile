@@ -75,11 +75,16 @@ sealed interface LauncherUpgradeOperation {
 
 /**
  * 最新版本的信息获取源
+ *
+ * 优先使用 Xenon 镜像，镜像不可用时回退到 GitHub 源站（最后一层回退）
  */
-private val LATEST_API_URL = MindustryCatalog.serverMirrorRepoUrl(
-    repo = "DeterMination-Wind/Xenon-Mobile",
-    path = "releases/latest"
-)
+private val LATEST_API_URLS: List<String> = run {
+    val mirror = MindustryCatalog.serverMirrorRepoUrl(
+        repo = "DeterMination-Wind/Xenon-Mobile",
+        path = "releases/latest"
+    )
+    listOfNotNull(mirror, MindustryCatalog.githubFallbackUrl(mirror)).distinct()
+}
 
 @kotlinx.serialization.Serializable
 private data class GithubRelease(
@@ -203,16 +208,28 @@ class LauncherUpgradeViewModel: ViewModel() {
      */
     private suspend fun fetchRemoteData(): RemoteData? {
         return withContext(Dispatchers.IO) {
-            runCatching {
-                withRetry(logTag = "LauncherUpgrade", maxRetries = 2) {
-                    GLOBAL_CLIENT.get(LATEST_API_URL)
-                        .safeBodyAsJson<GithubRelease>()
-                        .toRemoteData()
+            var lastError: Throwable? = null
+            for ((index, url) in LATEST_API_URLS.withIndex()) {
+                val data = runCatching {
+                    withRetry(logTag = "LauncherUpgrade", maxRetries = 2) {
+                        GLOBAL_CLIENT.get(url)
+                            .safeBodyAsJson<GithubRelease>()
+                            .toRemoteData()
+                    }
+                }.getOrElse { error ->
+                    lastError = error
+                    null
                 }
-            }.getOrElse { error ->
-                Logger.warning(TAG, "Failed to check for Xenon Mobile upgrade!", error)
-                null
+                if (data != null) {
+                    if (index > 0) {
+                        Logger.info(TAG, "Launcher upgrade metadata loaded from the GitHub fallback source: $url")
+                    }
+                    return@withContext data
+                }
+                Logger.warning(TAG, "Failed to load launcher upgrade metadata from $url", lastError)
             }
+            Logger.warning(TAG, "Failed to check for Xenon Mobile upgrade!", lastError)
+            null
         }
     }
 
@@ -234,7 +251,7 @@ class LauncherUpgradeViewModel: ViewModel() {
                 asset.name.contains("x86", true) -> RemoteData.RemoteFile.Arch.X86
                 else -> RemoteData.RemoteFile.Arch.ALL
             }
-            val downloadUrl = MindustryCatalog.mirrorUrls(asset.downloadUrl).firstOrNull()
+            val downloadUrl = MindustryCatalog.downloadCandidateUrls(asset.downloadUrl).firstOrNull()
                 ?: return@mapNotNull null
             RemoteData.RemoteFile(asset.name, downloadUrl, arch, asset.size)
         }

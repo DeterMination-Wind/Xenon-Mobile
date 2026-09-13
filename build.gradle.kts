@@ -100,9 +100,9 @@ tasks.register("validateXenonMobileCatalog") {
             val urls = artifact["urls"] as? List<*> ?: throw GradleException("Artifact $id has no urls")
             if (urls.isEmpty() || urls.any {
                     val url = it.toString()
-                    !url.startsWith("https://play.mindustry.men/github/") && !url.startsWith("https://")
+                    !url.startsWith("https://") && !url.startsWith("http://")
                 }) {
-                throw GradleException("Artifact $id must use Xenon mirror or HTTPS URLs")
+                throw GradleException("Artifact $id must use HTTP(S) URLs")
             }
             artifact.asStringField("versionName", id)
             if ((artifact["build"] as? Number)?.toLong()?.let { it > 0L } != true) {
@@ -153,9 +153,9 @@ tasks.register("validateGameSourceLock") {
         }
         val defaults = root["defaults"] as? Map<*, *> ?: throw GradleException("Source lock defaults are missing")
         val expected = mapOf(
-            "vanilla" to ("Anuken/Mindustry" to "20da6a38ab0874b5d971bffede3995efd3da5d70"),
-            "be" to ("Anuken/Mindustry" to "20da6a38ab0874b5d971bffede3995efd3da5d70"),
-            "mindustryx" to ("TinyLake/MindustryX" to "3b894f8518c1a36ec60f1f32af50a8b249d0f060")
+            "vanilla" to ("Anuken/Mindustry" to "89527f879b535b752376d9b935172be576320b59"),
+            "be" to ("Anuken/Mindustry" to "89527f879b535b752376d9b935172be576320b59"),
+            "mindustryx" to ("TinyLake/MindustryX" to "dc388e903e3be54b386787785ad5c15d589bea90")
         )
         expected.forEach { (variant, pin) ->
             val entry = defaults[variant] as? Map<*, *> ?: throw GradleException("Missing source lock for $variant")
@@ -166,7 +166,7 @@ tasks.register("validateGameSourceLock") {
         val fixture = (root["fixtures"] as? Map<*, *>)?.get("serverList") as? Map<*, *>
             ?: throw GradleException("Server list fixture source lock is missing")
         if (fixture["sourceRepo"] != "Anuken/MindustryServerList" ||
-            fixture["sourceCommit"] != "f297264dc24621753bc008a18e17b582fa5e3f65") {
+            fixture["sourceCommit"] != "10c099d68349bfde95ec60aea1b76dc7135e55bd") {
             throw GradleException("Server list fixture source lock mismatch")
         }
     }
