@@ -19,6 +19,9 @@ on:
 
 permissions:
   contents: write
+  # gh workflow run needs the Actions API; without it the tag step fails with HTTP 403 and the
+  # release never starts (a GITHUB_TOKEN tag push does not trigger workflows by itself).
+  actions: write
 
 concurrency:
   group: xenon-upstream-sync
