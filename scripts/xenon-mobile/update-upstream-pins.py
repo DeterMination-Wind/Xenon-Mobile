@@ -2,12 +2,12 @@
 """Prepare the version-isolation pins for the newest upstream Mindustry releases.
 
 ``game-source-lock.json`` records the exact commits the Xenon Mobile clone slots are built
-from, and the same commits are repeated in ``build.gradle.kts`` and
-``.github/workflows/release_ci.yml``. When upstream publishes a new release the pins must be
-advanced together, otherwise the next ``v*`` tag still builds the stale commits.
+from, and ``build.gradle.kts`` asserts the same commits. ``release_ci.yml`` reads the commit
+from the lock at run time, so this helper never rewrites a workflow file (a push made with the
+default ``GITHUB_TOKEN`` may not modify workflows).
 
-This helper resolves the newest upstream commits with the GitHub CLI (``gh``) and rewrites all
-three files. It is a dry run unless ``--write`` is passed::
+This helper resolves the newest upstream commits with the GitHub CLI (``gh``) and rewrites the
+lock plus ``build.gradle.kts``. It is a dry run unless ``--write`` is passed::
 
     python scripts/xenon-mobile/update-upstream-pins.py
     python scripts/xenon-mobile/update-upstream-pins.py --write
@@ -105,13 +105,8 @@ def plan_replacements(sha_by_repo: dict[str, str]) -> dict[Path, list[tuple[str,
         [(rf'("{re.escape(repo)}" to ")([0-9a-f]{{40}})"', sha_by_repo.get(repo)) for repo in built_repos]
         + [(r'(fixture\["sourceCommit"\] != ")([0-9a-f]{40})"', sha_by_repo.get(SERVER_LIST_REPO))],
     )
-    collect(
-        Path(".github/workflows/release_ci.yml"),
-        [
-            (rf"(source_repo: {re.escape(repo)}, source_commit: )([0-9a-f]{{40}})", sha_by_repo.get(repo))
-            for repo in built_repos
-        ],
-    )
+    # release_ci.yml deliberately reads the commit from game-source-lock.json, because a push made
+    # with the default GITHUB_TOKEN must not modify workflow files.
     return changes
 
 

@@ -114,17 +114,17 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { variant: vanilla, slot: 1, source_repo: Anuken/Mindustry, source_commit: 89527f879b535b752376d9b935172be576320b59, channel: stable }
-          - { variant: vanilla, slot: 2, source_repo: Anuken/Mindustry, source_commit: 89527f879b535b752376d9b935172be576320b59, channel: stable }
-          - { variant: vanilla, slot: 3, source_repo: Anuken/Mindustry, source_commit: 89527f879b535b752376d9b935172be576320b59, channel: stable }
-          - { variant: vanilla, slot: 4, source_repo: Anuken/Mindustry, source_commit: 89527f879b535b752376d9b935172be576320b59, channel: stable }
-          - { variant: vanilla, slot: 5, source_repo: Anuken/Mindustry, source_commit: 89527f879b535b752376d9b935172be576320b59, channel: stable }
-          - { variant: mindustryx, slot: 1, source_repo: TinyLake/MindustryX, source_commit: dc388e903e3be54b386787785ad5c15d589bea90, channel: stable }
-          - { variant: mindustryx, slot: 2, source_repo: TinyLake/MindustryX, source_commit: dc388e903e3be54b386787785ad5c15d589bea90, channel: stable }
-          - { variant: mindustryx, slot: 3, source_repo: TinyLake/MindustryX, source_commit: dc388e903e3be54b386787785ad5c15d589bea90, channel: stable }
-          - { variant: mindustryx, slot: 4, source_repo: TinyLake/MindustryX, source_commit: dc388e903e3be54b386787785ad5c15d589bea90, channel: stable }
-          - { variant: mindustryx, slot: 5, source_repo: TinyLake/MindustryX, source_commit: dc388e903e3be54b386787785ad5c15d589bea90, channel: stable }
-          - { variant: be, slot: 1, source_repo: Anuken/Mindustry, source_commit: 89527f879b535b752376d9b935172be576320b59, channel: be }
+          - { variant: vanilla, slot: 1, source_repo: Anuken/Mindustry, channel: stable }
+          - { variant: vanilla, slot: 2, source_repo: Anuken/Mindustry, channel: stable }
+          - { variant: vanilla, slot: 3, source_repo: Anuken/Mindustry, channel: stable }
+          - { variant: vanilla, slot: 4, source_repo: Anuken/Mindustry, channel: stable }
+          - { variant: vanilla, slot: 5, source_repo: Anuken/Mindustry, channel: stable }
+          - { variant: mindustryx, slot: 1, source_repo: TinyLake/MindustryX, channel: stable }
+          - { variant: mindustryx, slot: 2, source_repo: TinyLake/MindustryX, channel: stable }
+          - { variant: mindustryx, slot: 3, source_repo: TinyLake/MindustryX, channel: stable }
+          - { variant: mindustryx, slot: 4, source_repo: TinyLake/MindustryX, channel: stable }
+          - { variant: mindustryx, slot: 5, source_repo: TinyLake/MindustryX, channel: stable }
+          - { variant: be, slot: 1, source_repo: Anuken/Mindustry, channel: be }
     env:
       SIGNING_KEYSTORE_BASE64: ${{ secrets.SIGNING_KEYSTORE_BASE64 }}
       STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
@@ -162,6 +162,18 @@ jobs:
           test -s "$key"
           echo "CLONE_KEYSTORE_PATH=$key" >> "$GITHUB_ENV"
 
+      - name: Resolve the pinned source commit
+        id: pin
+        shell: bash
+        run: |
+          set -euo pipefail
+          # The pin lives in game-source-lock.json so the daily upstream sync never has to change
+          # this workflow file: a GITHUB_TOKEN push may not modify workflow files.
+          sha="$(python3 -c "import json;print(json.load(open('game-source-lock.json'))['defaults']['${{ matrix.variant }}']['sourceCommit'])")"
+          test -n "$sha"
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+          echo "Pinned ${{ matrix.variant }} source commit: $sha"
+
       - name: Checkout pinned Mindustry source
         shell: bash
         run: |
@@ -173,8 +185,8 @@ jobs:
             clone_args+=(--recurse-submodules --shallow-submodules)
           fi
           git clone "${clone_args[@]}" "https://github.com/${{ matrix.source_repo }}.git" game-source
-          git -C game-source fetch --depth=1 origin "${{ matrix.source_commit }}"
-          git -C game-source checkout --detach "${{ matrix.source_commit }}"
+          git -C game-source fetch --depth=1 origin "${{ steps.pin.outputs.sha }}"
+          git -C game-source checkout --detach "${{ steps.pin.outputs.sha }}"
           if [ "${{ matrix.variant }}" = "mindustryx" ]; then
             git -C game-source submodule update --init --recursive --depth=10
             git -C game-source config user.name "github-actions[bot]"
@@ -287,7 +299,7 @@ jobs:
             --changelog "Xenon Mobile ${{ matrix.variant }} slot ${{ matrix.slot }}" \
             --package-name "com.xenon.mobile.clone.${{ matrix.variant }}.slot${{ matrix.slot }}" \
             --source-repo "${{ matrix.source_repo }}" \
-            --source-commit "${{ matrix.source_commit }}" \
+            --source-commit "${{ steps.pin.outputs.sha }}" \
             --release-tag "$GITHUB_REF_NAME" \
             --aapt2 "$aapt2" \
             --apksigner "$apksigner"
@@ -310,9 +322,9 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { variant: vanilla, source_repo: Anuken/Mindustry, source_commit: 89527f879b535b752376d9b935172be576320b59, channel: stable }
-          - { variant: be, source_repo: Anuken/Mindustry, source_commit: 89527f879b535b752376d9b935172be576320b59, channel: be }
-          - { variant: mindustryx, source_repo: TinyLake/MindustryX, source_commit: dc388e903e3be54b386787785ad5c15d589bea90, channel: stable }
+          - { variant: vanilla, source_repo: Anuken/Mindustry, channel: stable }
+          - { variant: be, source_repo: Anuken/Mindustry, channel: be }
+          - { variant: mindustryx, source_repo: TinyLake/MindustryX, channel: stable }
     steps:
       - name: Checkout Xenon Mobile
         uses: actions/checkout@v6
@@ -322,6 +334,18 @@ jobs:
         with:
           distribution: temurin
           java-version: "17"
+
+      - name: Resolve the pinned source commit
+        id: pin
+        shell: bash
+        run: |
+          set -euo pipefail
+          # The pin lives in game-source-lock.json so the daily upstream sync never has to change
+          # this workflow file: a GITHUB_TOKEN push may not modify workflow files.
+          sha="$(python3 -c "import json;print(json.load(open('game-source-lock.json'))['defaults']['${{ matrix.variant }}']['sourceCommit'])")"
+          test -n "$sha"
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+          echo "Pinned ${{ matrix.variant }} source commit: $sha"
 
       - name: Checkout pinned Mindustry source
         shell: bash
@@ -334,8 +358,8 @@ jobs:
             clone_args+=(--recurse-submodules --shallow-submodules)
           fi
           git clone "${clone_args[@]}" "https://github.com/${{ matrix.source_repo }}.git" game-source
-          git -C game-source fetch --depth=1 origin "${{ matrix.source_commit }}"
-          git -C game-source checkout --detach "${{ matrix.source_commit }}"
+          git -C game-source fetch --depth=1 origin "${{ steps.pin.outputs.sha }}"
+          git -C game-source checkout --detach "${{ steps.pin.outputs.sha }}"
           if [ "${{ matrix.variant }}" = "mindustryx" ]; then
             git -C game-source submodule update --init --recursive --depth=10
             git -C game-source config user.name "github-actions[bot]"
@@ -400,7 +424,7 @@ jobs:
             --mg-version mg-v1 \
             --changelog "Xenon Mobile ${{ matrix.variant }} JAR" \
             --source-repo "${{ matrix.source_repo }}" \
-            --source-commit "${{ matrix.source_commit }}" \
+            --source-commit "${{ steps.pin.outputs.sha }}" \
             --release-tag "$GITHUB_REF_NAME"
 
       - name: Upload JAR release inputs

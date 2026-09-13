@@ -230,14 +230,9 @@ def check_local_pins(root: Path, lock: dict) -> list[dict]:
         elif gradle_hits != {sha}:
             add(GAP, f"{GRADLE_FILE} pins {repo} to {sorted(gradle_hits)} instead of {sha[:12]}")
 
-        workflow_hits = {
-            match.group(1)
-            for match in re.finditer(rf"source_repo: {re.escape(repo)}, source_commit: ([0-9a-f]{{40}})", workflow)
-        }
-        if not workflow_hits:
-            add(GAP, f"{WORKFLOW_FILE} does not build {repo}")
-        elif workflow_hits != {sha}:
-            add(GAP, f"{WORKFLOW_FILE} builds {repo} at {sorted(workflow_hits)} instead of {sha[:12]}")
+        hardcoded = re.findall(rf"source_repo: {re.escape(repo)}, source_commit: [0-9a-f]{{40}}", workflow)
+        if hardcoded:
+            add(GAP, f"{WORKFLOW_FILE} still hardcodes a {repo} commit instead of reading the lock")
 
     fixture_hits = {
         match.group(1)
@@ -249,9 +244,12 @@ def check_local_pins(root: Path, lock: dict) -> list[dict]:
     elif fixture_hits != {fixture_sha}:
         add(GAP, f"{GRADLE_FILE} validates fixture {sorted(fixture_hits)} instead of {fixture_sha[:12]}")
 
+    if "game-source-lock.json" not in workflow or "steps.pin.outputs.sha" not in workflow:
+        add(GAP, f"{WORKFLOW_FILE} must resolve the pinned commit from game-source-lock.json")
+
     if not any(item["status"] == GAP for item in findings):
         repos = ", ".join(sorted(list(wanted) + [SERVER_LIST_REPO]))
-        add(OK, f"{GRADLE_FILE}, {WORKFLOW_FILE} and the source lock agree on {repos}")
+        add(OK, f"{GRADLE_FILE} agrees with the source lock and {WORKFLOW_FILE} reads it ({repos})")
 
     return findings
 

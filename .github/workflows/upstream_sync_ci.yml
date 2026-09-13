@@ -94,7 +94,9 @@ jobs:
             exit 0
           fi
           summary="$(grep '^upstream ' "$RUNNER_TEMP/sync.log" | sed 's/^upstream //' | tr '\n' ';' || true)"
-          git add game-source-lock.json build.gradle.kts .github/workflows/release_ci.yml
+          # Only the lock and the gradle assertion: a GITHUB_TOKEN push may not modify
+          # workflow files, and release_ci.yml reads the pin from the lock anyway.
+          git add game-source-lock.json build.gradle.kts
           git commit -m "chore(xenon): sync upstream Mindustry pins" -m "${summary}"
           git push origin HEAD:main
           echo "changed=true" >> "$GITHUB_OUTPUT"
