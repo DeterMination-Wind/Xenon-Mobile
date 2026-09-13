@@ -176,6 +176,20 @@ jobs:
             )
             echo "CLONE_SOURCE_DIR=game-source/work" >> "$GITHUB_ENV"
           else
+            # Build Arc from source next to Mindustry (Mindustry's localArc): JitPack currently
+            # answers 401 for the required backend-android artifact, and Mindustry's own
+            # settings.gradle calls the local Arc checkout "highly recommended, as jitpack is
+            # unreliable". The checked out commit is the archash Mindustry pins.
+            arc_hash="$(sed -n 's/^archash=//p' game-source/gradle.properties | tr -d '[:space:]')"
+            test -n "$arc_hash"
+            git clone --quiet https://github.com/Anuken/Arc.git Arc
+            if ! git -C Arc checkout --detach "$arc_hash" 2>/dev/null; then
+              arc_full="$(git ls-remote https://github.com/Anuken/Arc.git | awk -v h="$arc_hash" '$1 ~ "^" h { print $1; exit }')"
+              test -n "$arc_full"
+              git -C Arc fetch --depth=1 origin "$arc_full"
+              git -C Arc checkout --detach "$arc_full"
+            fi
+            echo "ARC_COMMIT=$(git -C Arc rev-parse HEAD)" >> "$GITHUB_ENV"
             echo "CLONE_SOURCE_DIR=game-source" >> "$GITHUB_ENV"
           fi
 
@@ -217,10 +231,8 @@ jobs:
           type=official
           if [ "${{ matrix.variant }}" = "be" ]; then type=bleeding-edge; fi
           chmod +x "$CLONE_SOURCE_DIR/gradlew"
+          # Every variant builds Arc from the sibling checkout, so -PnoLocalArc stays off.
           gradle_args=(--no-daemon :android:assembleRelease)
-          if [ "${{ matrix.variant }}" != "mindustryx" ]; then
-            gradle_args+=(-PnoLocalArc)
-          fi
           gradle_args+=(
             -Pbuildversion="$GITHUB_RUN_NUMBER"
             -PversionType="$type"
@@ -325,6 +337,16 @@ jobs:
             )
             echo "JAR_SOURCE_DIR=game-source/work" >> "$GITHUB_ENV"
           else
+            # Same local Arc checkout as the clone jobs, so the JARs do not depend on JitPack.
+            arc_hash="$(sed -n 's/^archash=//p' game-source/gradle.properties | tr -d '[:space:]')"
+            test -n "$arc_hash"
+            git clone --quiet https://github.com/Anuken/Arc.git Arc
+            if ! git -C Arc checkout --detach "$arc_hash" 2>/dev/null; then
+              arc_full="$(git ls-remote https://github.com/Anuken/Arc.git | awk -v h="$arc_hash" '$1 ~ "^" h { print $1; exit }')"
+              test -n "$arc_full"
+              git -C Arc fetch --depth=1 origin "$arc_full"
+              git -C Arc checkout --detach "$arc_full"
+            fi
             echo "JAR_SOURCE_DIR=game-source" >> "$GITHUB_ENV"
           fi
 
@@ -347,11 +369,7 @@ jobs:
           if [ "${{ matrix.variant }}" = "be" ]; then type=bleeding-edge; fi
           (
             cd "$JAR_SOURCE_DIR"
-            if [ "${{ matrix.variant }}" = "mindustryx" ]; then
-              ./gradlew --no-daemon :desktop:dist -Pbuildversion="$GITHUB_RUN_NUMBER" -PversionType="$type" -PversionModifier=release
-            else
-              ./gradlew --no-daemon :desktop:dist -PnoLocalArc -Pbuildversion="$GITHUB_RUN_NUMBER" -PversionType="$type" -PversionModifier=release
-            fi
+            ./gradlew --no-daemon :desktop:dist -Pbuildversion="$GITHUB_RUN_NUMBER" -PversionType="$type" -PversionModifier=release
           )
           jar_file="$JAR_SOURCE_DIR/desktop/build/libs/Mindustry.jar"
           test -f "$jar_file"
