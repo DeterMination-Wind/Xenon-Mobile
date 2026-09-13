@@ -144,6 +144,12 @@ RELEASE_KEY_ALIAS (optional; defaults to movtery_zalith)
 The workflow runs for a `v*` tag (or an explicit `gh workflow run --ref <tag>`), and its first job
 refuses any other ref. It then:
 
+The clone and JAR jobs do not download Arc from JitPack: they fetch `Anuken/Arc` at the `archash`
+recorded in Mindustry's `gradle.properties` into an `Arc` directory next to the Mindustry checkout
+and let Mindustry's `localArc` composite build compile it. JitPack currently answers `401` for the
+`com.android` backend artifact, and Mindustry's own `settings.gradle` calls the local Arc checkout
+"highly recommended, as jitpack is unreliable".
+
 1. Builds the signed arm64 Hub APK.
 2. Checks out each locked game commit and builds the 11 arm64 clone APKs with the Xenon overlay.
 3. Builds the Vanilla, BE, and MindustryX JAR artifacts.

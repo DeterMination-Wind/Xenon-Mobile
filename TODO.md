@@ -24,4 +24,5 @@
 - [x] 确认镜像本体：`http://121.199.60.4/github`（HTTP/80）catalog、产物、服务器列表全部 200，产物 SHA-256 与 catalog 完全一致，支持 Range 与 immutable 缓存。
 - [x] 定位域名故障：`play.mindustry.men` / `main.mindustry.men` 被主机商 ICP 备案拦截（返回 403 `Non-compliance ICP Filing` 页面），与客户端网络无关。
 - [x] App 默认镜像改为直连 IP `http://121.199.60.4/github`，`play.mindustry.men` 降为第二候选，GitHub 仍是最后一层回退。
+- [x] 发版流水线改用本地 Arc：`release_ci.yml` 的 clone/JAR 作业按 Mindustry 的 `archash` 拉取 `Anuken/Arc` 到同级目录，走 `localArc` 复合构建，不再依赖 JitPack（JitPack 对 `backend-android` 返回 401）。
 

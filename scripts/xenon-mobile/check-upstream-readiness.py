@@ -10,7 +10,8 @@ uses the GitHub CLI (``gh``) to compare that chain with upstream:
   ``.github/workflows/release_ci.yml`` versus each other;
 * the published Xenon Mobile release and ``catalog/xenon-mobile-catalog.json`` on ``main``;
 * every catalog artifact versus the release asset name, size and SHA-256 digest;
-* the source commit recorded on the published artifacts versus the current source lock.
+* the source commit recorded on the published artifacts versus the current source lock;
+* the mirror a device hits first versus the catalog and release assets on ``main``.
 
 Exit codes: ``0`` everything matches, ``1`` a readiness gap was found, ``2`` gh data was
 unavailable (missing CLI, offline, unauthenticated).
@@ -33,6 +34,8 @@ from pathlib import Path
 
 REMOTE_REPO = "DeterMination-Wind/Xenon-Mobile"
 GRADLE_FILE = "build.gradle.kts"
+DEFAULT_MIRROR = "http://121.199.60.4/github"
+RELEASE_OWNER_REPO = "DeterMination-Wind/Xenon-Mobile"
 WORKFLOW_FILE = ".github/workflows/release_ci.yml"
 CATALOG_BRANCH = "main"
 CATALOG_PATH = "catalog/xenon-mobile-catalog.json"
@@ -99,6 +102,84 @@ def load_catalog(repo: str, branch: str, path: str) -> dict:
     if not isinstance(data, dict) or not data.get("content"):
         raise GhError(f"{repo}@{branch}:{path} is missing")
     return json.loads(base64.b64decode(data["content"]).decode("utf-8"))
+
+
+def newest_release_tag(catalog: dict) -> str:
+    tags = sorted({item.get("releaseTag") or "" for item in catalog.get("artifacts") or []})
+    return next((tag for tag in reversed(tags) if tag), "")
+
+
+def http_request(url: str, method: str = "GET", timeout: int = 25) -> tuple[int | None, bytes]:
+    """Return (status, body); status is None when the host could not be reached."""
+    import urllib.error
+    import urllib.request
+
+    request = urllib.request.Request(url, method=method, headers={"User-Agent": "xenon-readiness"})
+    try:
+        with urllib.request.urlopen(request, timeout=timeout) as response:
+            body = b"" if method == "HEAD" else response.read(2 * 1024 * 1024)
+            return response.status, body
+    except urllib.error.HTTPError as error:
+        return error.code, b""
+    except Exception:
+        return None, b""
+
+
+def check_mirror(remote_catalog: dict | None, mirror: str) -> list[dict]:
+    """Verify that the mirror a device hits first serves the newest catalog and release assets."""
+    findings: list[dict] = []
+
+    def add(status: str, message: str) -> None:
+        findings.append({"status": status, "scope": "mirror", "message": message})
+
+    if not remote_catalog:
+        add(UNKNOWN, "the catalog on main could not be read, skipping the mirror check")
+        return findings
+    if not mirror:
+        return findings
+
+    base = mirror.rstrip("/")
+    expected = newest_release_tag(remote_catalog)
+    url = f"{base}/raw/{RELEASE_OWNER_REPO}/main/catalog/xenon-mobile-catalog.json"
+    status, body = http_request(url)
+    if status is None:
+        add(UNKNOWN, f"{base} is unreachable")
+        return findings
+    if status != 200:
+        add(STALE, f"{base} answers HTTP {status} for the catalog")
+        return findings
+
+    try:
+        mirror_catalog = json.loads(body.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError) as error:
+        add(STALE, f"{base} returned an unreadable catalog: {error}")
+        return findings
+
+    served = newest_release_tag(mirror_catalog)
+    if served != expected:
+        add(
+            STALE,
+            f"{base} still serves {served or 'no release'}; main publishes {expected}. "
+            "Refresh the mirror cache so devices get the newest artifacts.",
+        )
+        return findings
+
+    artifact = next(
+        (item for item in remote_catalog.get("artifacts") or [] if (item.get("releaseTag") or "") == expected),
+        None,
+    )
+    if artifact:
+        filename = (artifact.get("urls") or [""])[0].split("?", 1)[0].rsplit("/", 1)[-1]
+        asset_url = f"{base}/repos/{RELEASE_OWNER_REPO}/releases/download/{expected}/{filename}"
+        asset_status, _ = http_request(asset_url, method="HEAD")
+        if asset_status is None:
+            add(UNKNOWN, f"{base} is unreachable for {filename}")
+        elif asset_status >= 400:
+            add(STALE, f"{base} answers HTTP {asset_status} for {filename}; the release is not cached yet")
+        else:
+            add(OK, f"{base} serves {expected} and its release assets")
+
+    return findings
 
 
 def check_local_pins(root: Path, lock: dict) -> list[dict]:
@@ -175,7 +256,7 @@ def check_local_pins(root: Path, lock: dict) -> list[dict]:
     return findings
 
 
-def build_report(catalog: dict, lock: dict, root: Path) -> list[dict]:
+def build_report(catalog: dict, lock: dict, root: Path, mirror: str = DEFAULT_MIRROR) -> list[dict]:
     findings: list[dict] = []
     findings += check_local_pins(root, lock)
 
@@ -302,6 +383,8 @@ def build_report(catalog: dict, lock: dict, root: Path) -> list[dict]:
             else:
                 add(OK, "published", f"{variant}: published artifacts match the pinned {pin[:12]}")
 
+    findings += check_mirror(remote_catalog, mirror)
+
     if catalog_tag:
         try:
             latest_tag, published = latest_release(REMOTE_REPO)
@@ -325,6 +408,7 @@ def main() -> int:
     parser.add_argument("--catalog", type=Path, default=Path("catalog/xenon-mobile-catalog.json"))
     parser.add_argument("--lock", type=Path, default=Path(LOCK_PATH))
     parser.add_argument("--json", action="store_true", help="print the findings as JSON")
+    parser.add_argument("--mirror", default=DEFAULT_MIRROR, help="mirror base to verify (default: the shipped IP mirror)")
     parser.add_argument(
         "--ignore-scopes",
         default="",
@@ -344,7 +428,7 @@ def main() -> int:
         return 2
 
     try:
-        findings = build_report(catalog, lock, root)
+        findings = build_report(catalog, lock, root, args.mirror)
     except GhError as error:
         print(f"gh data unavailable: {error}", file=sys.stderr)
         return 2
