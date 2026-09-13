@@ -65,6 +65,7 @@ import com.movtery.zalithlauncher.library.libraryData
 import com.movtery.zalithlauncher.path.URL_COMMUNITY
 import com.movtery.zalithlauncher.path.URL_MCMOD
 import com.movtery.zalithlauncher.path.URL_PROJECT
+import com.movtery.zalithlauncher.path.URL_AUTHOR
 import com.movtery.zalithlauncher.path.URL_SUPPORT
 import com.movtery.zalithlauncher.path.URL_WEBLATE
 import com.movtery.zalithlauncher.ui.base.BaseScreen
@@ -121,14 +122,14 @@ fun AboutInfoScreen(
                         )
 
                         ButtonIconItem(
-                            icon = painterResource(R.drawable.img_avatar_movtery),
-                            title = stringResource(R.string.about_launcher_author_movtery_title),
-                            text = stringResource(R.string.about_launcher_author_movtery_text, BuildKeys.LAUNCHER_NAME),
+                            icon = painterResource(R.drawable.img_avatar_author),
+                            title = stringResource(R.string.about_launcher_author_title),
+                            text = stringResource(R.string.about_launcher_author_text, BuildKeys.LAUNCHER_NAME),
                             button = {
                                 Button(
-                                    onClick = { openLink(URL_SUPPORT) }
+                                    onClick = { openLink(URL_AUTHOR) }
                                 ) {
-                                    Text(text = stringResource(R.string.about_sponsor))
+                                    Text(text = stringResource(R.string.about_author_github))
                                 }
                             }
                         )

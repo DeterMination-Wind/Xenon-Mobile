@@ -338,8 +338,8 @@
     <string name="settings_renderer_resolution_scale_title">画面の解像度</string>
     <string name="about_launcher_title">ランチャーについて</string>
     <string name="about_launcher_version">ランチャーバージョン: %s</string>
-    <string name="about_launcher_author_movtery_title">MovTery</string>
-    <string name="about_launcher_author_movtery_text">%s の作者</string>
+    <string name="about_launcher_author_title">DeterMination-Wind</string>
+    <string name="about_launcher_author_text">%s の作者</string>
     <string name="about_launcher_project_link">プロジェクトリンク</string>
     <string name="about_sponsor">スポンサーの支援</string>
     <string name="about_acknowledgements_title">謝辞</string>

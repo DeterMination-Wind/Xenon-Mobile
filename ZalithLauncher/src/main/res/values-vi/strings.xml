@@ -608,8 +608,8 @@
     <string name="shader_pack_manage_no_packs">Không có gói shader cho phiên bản này</string>
     <string name="about_launcher_title">Thông tin Launcher</string>
     <string name="about_launcher_version">Phiên bản launcher: %s</string>
-    <string name="about_launcher_author_movtery_title">MovTery</string>
-    <string name="about_launcher_author_movtery_text">Tác giả của %s</string>
+    <string name="about_launcher_author_title">DeterMination-Wind</string>
+    <string name="about_launcher_author_text">Tác giả của %s</string>
     <string name="about_launcher_project_link">Liên kết dự án</string>
     <string name="about_sponsor">Hỗ trợ tài trợ</string>
     <string name="crash_type">Loại crash: %s</string>

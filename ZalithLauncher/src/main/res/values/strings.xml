@@ -1308,9 +1308,10 @@
     <!-- About -->
     <string name="about_launcher_title">About Launcher</string>
     <string name="about_launcher_version">Launcher Version: %s</string>
-    <string name="about_launcher_author_movtery_title">MovTery</string>
-    <string name="about_launcher_author_movtery_text">Author of %s</string>
+    <string name="about_launcher_author_title">DeterMination-Wind</string>
+    <string name="about_launcher_author_text">Author of %s</string>
     <string name="about_launcher_project_link">Project Link</string>
+    <string name="about_author_github">GitHub</string>
     <string name="about_sponsor">Sponsorship Support</string>
     <string name="about_acknowledgements_title">Acknowledgements</string>
     <string name="about_acknowledgements_pojav_text">%s uses the launch backend from PojavLauncher</string>

@@ -399,6 +399,20 @@ def build_report(catalog: dict, lock: dict, root: Path, mirror: str = DEFAULT_MI
         except GhError as error:
             add(UNKNOWN, "release", f"{REMOTE_REPO}: {error}")
 
+        # The launcher updater reads the `versionCode:` marker out of the Release body; without it
+        # every installed app reports a failed update check.
+        import re
+
+        try:
+            release = gh_json(f"repos/{REMOTE_REPO}/releases/tags/{catalog_tag}") or {}
+            body = release.get("body") or ""
+            if re.search(r"(?im)\bversionCode\s*[:=]\s*\d+", body):
+                add(OK, "release", f"{catalog_tag} carries the versionCode marker")
+            else:
+                add(GAP, "release", f"{catalog_tag} has no `versionCode:` marker; the launcher would report a failed update check")
+        except GhError as error:
+            add(UNKNOWN, "release", f"{REMOTE_REPO}: {error}")
+
     return findings
 
 

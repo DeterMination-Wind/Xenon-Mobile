@@ -48,7 +48,7 @@ def previous_release_tag(previous_catalog: dict | None, tag: str) -> str:
     return candidate if candidate != tag else ""
 
 
-def render_chinese(tag: str, artifacts: list[dict], mirror: str, previous: str) -> list[str]:
+def render_chinese(tag: str, artifacts: list[dict], mirror: str, previous: str, version_code: int | None) -> list[str]:
     hub = f"xenon-mobile-hub-{tag}-arm64.apk"
     apks = [item for item in artifacts if item.get("backend") == "apk"]
     jars = [item for item in artifacts if item.get("backend") == "jar"]
@@ -103,6 +103,8 @@ def render_chinese(tag: str, artifacts: list[dict], mirror: str, previous: str) 
     add("")
     add("## 构建来源")
     add("")
+    if version_code is not None:
+        add(f"versionCode: {version_code}")
     mindustry = pin_of(artifacts, "vanilla") or pin_of(artifacts, "be")
     mindustry_x = pin_of(artifacts, "mindustryx")
     if mindustry:
@@ -117,7 +119,7 @@ def render_chinese(tag: str, artifacts: list[dict], mirror: str, previous: str) 
     return lines
 
 
-def render_english(tag: str, artifacts: list[dict], mirror: str, previous: str) -> list[str]:
+def render_english(tag: str, artifacts: list[dict], mirror: str, previous: str, version_code: int | None) -> list[str]:
     hub = f"xenon-mobile-hub-{tag}-arm64.apk"
     apks = [item for item in artifacts if item.get("backend") == "apk"]
     jars = [item for item in artifacts if item.get("backend") == "jar"]
@@ -173,6 +175,8 @@ def render_english(tag: str, artifacts: list[dict], mirror: str, previous: str) 
     add("")
     add("## Built from")
     add("")
+    if version_code is not None:
+        add(f"versionCode: {version_code}")
     mindustry = pin_of(artifacts, "vanilla") or pin_of(artifacts, "be")
     mindustry_x = pin_of(artifacts, "mindustryx")
     if mindustry:
@@ -187,14 +191,14 @@ def render_english(tag: str, artifacts: list[dict], mirror: str, previous: str) 
     return lines
 
 
-def render(tag: str, catalog: dict, previous_catalog: dict | None) -> str:
+def render(tag: str, catalog: dict, previous_catalog: dict | None, version_code: int | None = None) -> str:
     artifacts = catalog.get("artifacts") or []
     mirror = (catalog.get("mirrors") or [{}])[0].get("baseUrl") or DEFAULT_MIRROR
     previous = previous_release_tag(previous_catalog, tag)
 
-    lines = render_chinese(tag, artifacts, mirror, previous)
+    lines = render_chinese(tag, artifacts, mirror, previous, version_code)
     lines += ["---", ""]
-    lines += render_english(tag, artifacts, mirror, previous)
+    lines += render_english(tag, artifacts, mirror, previous, version_code)
     return "\n".join(lines)
 
 
@@ -204,11 +208,16 @@ def main() -> int:
     parser.add_argument("--catalog", type=Path, required=True, help="catalog asset generated for this release")
     parser.add_argument("--previous", type=Path, help="catalog of the previous release (optional)")
     parser.add_argument("--output", type=Path, help="write the markdown here instead of stdout")
+    parser.add_argument(
+        "--version-code",
+        type=int,
+        help="Hub APK versionCode; the launcher's updater reads the `versionCode: <n>` marker from the body",
+    )
     args = parser.parse_args()
 
     catalog = json.loads(args.catalog.read_text(encoding="utf-8"))
     previous = json.loads(args.previous.read_text(encoding="utf-8")) if args.previous and args.previous.is_file() else None
-    body = render(args.tag, catalog, previous)
+    body = render(args.tag, catalog, previous, args.version_code)
     if args.output:
         args.output.parent.mkdir(parents=True, exist_ok=True)
         args.output.write_text(body, encoding="utf-8", newline="\n")

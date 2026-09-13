@@ -1037,8 +1037,8 @@
     <string name="control_editor_exit_confirm">Sair sem salvar</string>
     <string name="about_launcher_title">Sobre o Launcher</string>
     <string name="about_launcher_version">Versão do Launcher: %s</string>
-    <string name="about_launcher_author_movtery_title">MovTery</string>
-    <string name="about_launcher_author_movtery_text">Autor de %s</string>
+    <string name="about_launcher_author_title">DeterMination-Wind</string>
+    <string name="about_launcher_author_text">Autor de %s</string>
     <string name="about_launcher_project_link">Link do Projeto</string>
     <string name="about_sponsor">Apoio de patrocínio</string>
     <string name="about_acknowledgements_title">Agradecimentos</string>

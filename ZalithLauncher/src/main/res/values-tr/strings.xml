@@ -658,8 +658,8 @@
     <string name="control_editor_exit_confirm">Çık</string>
     <string name="about_launcher_title">Başlatıcı Hakkında</string>
     <string name="about_launcher_version">Başlatıcı Versiyonu: %s</string>
-    <string name="about_launcher_author_movtery_title">MovTery</string>
-    <string name="about_launcher_author_movtery_text">%s\'nin Oluşturucusu</string>
+    <string name="about_launcher_author_title">DeterMination-Wind</string>
+    <string name="about_launcher_author_text">%s\'nin Oluşturucusu</string>
     <string name="about_launcher_project_link">Proje Linki</string>
     <string name="about_sponsor">Sponsorluk Desteği</string>
     <string name="about_acknowledgements_title">Teşekkür ve Atıflar</string>

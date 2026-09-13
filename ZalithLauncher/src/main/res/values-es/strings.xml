@@ -999,7 +999,7 @@
     <string name="control_editor_exit_confirm">Salir directamente</string>
     <string name="about_launcher_title">Acerca del launcher</string>
     <string name="about_launcher_version">Versión del launcher: %s</string>
-    <string name="about_launcher_author_movtery_text">Autor de %s</string>
+    <string name="about_launcher_author_text">Autor de %s</string>
     <string name="about_launcher_project_link">Enlace del proyecto</string>
     <string name="about_sponsor">Soporte de patrocinio</string>
     <string name="about_acknowledgements_title">Agradecimientos</string>

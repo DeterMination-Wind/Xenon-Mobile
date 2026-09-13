@@ -817,8 +817,8 @@
     <string name="control_editor_exit_confirm">Выйти без сохранения</string>
     <string name="about_launcher_title">О лаунчере</string>
     <string name="about_launcher_version">Версия лаунчера: %s</string>
-    <string name="about_launcher_author_movtery_title">MovTery</string>
-    <string name="about_launcher_author_movtery_text">Автор %s</string>
+    <string name="about_launcher_author_title">DeterMination-Wind</string>
+    <string name="about_launcher_author_text">Автор %s</string>
     <string name="about_launcher_project_link">Ссылка на проект</string>
     <string name="about_sponsor">Спонсорская поддержка</string>
     <string name="about_acknowledgements_title">Благодарности</string>

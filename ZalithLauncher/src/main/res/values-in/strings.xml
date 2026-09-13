@@ -725,8 +725,8 @@
     <string name="control_editor_exit_confirm">Langsung Keluar</string>
     <string name="about_launcher_title">Tentang Launcher</string>
     <string name="about_launcher_version">Versi Launcher: %s</string>
-    <string name="about_launcher_author_movtery_title">MovTery</string>
-    <string name="about_launcher_author_movtery_text">Pembuat %s</string>
+    <string name="about_launcher_author_title">DeterMination-Wind</string>
+    <string name="about_launcher_author_text">Pembuat %s</string>
     <string name="about_launcher_project_link">Link Project</string>
     <string name="about_sponsor">Dukung Dengan Sponsor</string>
     <string name="about_acknowledgements_title">Ucapan Terima Kasih Kepada</string>

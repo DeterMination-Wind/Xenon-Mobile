@@ -362,8 +362,8 @@
     <string name="account_logging_not_purchased_minecraft">Propriedade do jogo não verificada. Compre o Minecraft através do site oficial.</string>
     <string name="about_launcher_title">Sobre o launcher</string>
     <string name="about_launcher_version">Versão do launcher: %s</string>
-    <string name="about_launcher_author_movtery_title">MovTery</string>
-    <string name="about_launcher_author_movtery_text">Autor de %s</string>
+    <string name="about_launcher_author_title">DeterMination-Wind</string>
+    <string name="about_launcher_author_text">Autor de %s</string>
     <string name="about_launcher_project_link">Link do projeto</string>
     <string name="about_sponsor">Apoiar</string>
     <string name="about_acknowledgements_mcmod">MCMod (mcmod.cnc)</string>

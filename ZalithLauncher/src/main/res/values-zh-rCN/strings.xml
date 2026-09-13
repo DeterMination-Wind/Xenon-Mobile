@@ -1305,9 +1305,10 @@
     <!--  关于  -->
     <string name="about_launcher_title">关于启动器</string>
     <string name="about_launcher_version">启动器版本：%s</string>
-    <string name="about_launcher_author_movtery_title">墨北MovTery</string>
-    <string name="about_launcher_author_movtery_text">%s 的作者</string>
+    <string name="about_launcher_author_title">DeterMination-Wind</string>
+    <string name="about_launcher_author_text">%s 的作者</string>
     <string name="about_launcher_project_link">项目地址</string>
+    <string name="about_author_github">GitHub 主页</string>
     <string name="about_sponsor">赞助支持</string>
     <string name="about_acknowledgements_title">鸣谢</string>
     <string name="about_acknowledgements_pojav_text">%s 使用了 PojavLauncher 的启动后端</string>
