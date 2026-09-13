@@ -19,6 +19,16 @@ The Hub validates the catalog before showing an artifact. A valid v1 artifact co
 
 The current catalog contains the 14 published game artifacts: 11 APK slots and 3 JAR variants.
 
+### Release Build
+
+The catalog is parsed with Gson reflection, so the release build must keep the model:
+`proguard-rules.pro` keeps `MindustryCatalogManifest`, `MindustryArtifact`, `CatalogMirror` and the
+`MindustryVariant` / `MindustryBackend` enums (names, fields and constructors) plus the `Signature`
+attribute for the generic lists. Without those rules R8 rewrites the model into an abstract shell and
+drops the no-arguments constructor, and every device fails with
+`Abstract classes can't be instantiated! ... Class name: mq5` while loading the catalog.
+`MindustryCatalogR8RulesTest` fails the build when a model is missing from the rules.
+
 ### Runtime Source Order
 
 For the catalog, every artifact and both server lists the Hub builds an ordered candidate list:

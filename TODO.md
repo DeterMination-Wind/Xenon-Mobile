@@ -24,5 +24,6 @@
 - [x] 确认镜像本体：`http://121.199.60.4/github`（HTTP/80）catalog、产物、服务器列表全部 200，产物 SHA-256 与 catalog 完全一致，支持 Range 与 immutable 缓存。
 - [x] 定位域名故障：`play.mindustry.men` / `main.mindustry.men` 被主机商 ICP 备案拦截（返回 403 `Non-compliance ICP Filing` 页面），与客户端网络无关。
 - [x] App 默认镜像改为直连 IP `http://121.199.60.4/github`，`play.mindustry.men` 降为第二候选，GitHub 仍是最后一层回退。
-- [x] 发版流水线改用本地 Arc：`release_ci.yml` 的 clone/JAR 作业按 Mindustry 的 `archash` 拉取 `Anuken/Arc` 到同级目录，走 `localArc` 复合构建，不再依赖 JitPack（JitPack 对 `backend-android` 返回 401）。- [x] Release 描述改成玩家可读：`release-notes.py` 生成中英双语说明，第一行直接告诉安卓玩家只下 `xenon-mobile-hub-<tag>-arm64.apk`，并逐项解释 clone APK / 桌面 JAR / 审计材料。
+- [x] 发版流水线改用本地 Arc：`release_ci.yml` 的 clone/JAR 作业按 Mindustry 的 `archash` 拉取 `Anuken/Arc` 到同级目录，走 `localArc` 复合构建，不再依赖 JitPack（JitPack 对 `backend-android` 返回 401）。- [x] Release 描述改成玩家可读：`release-notes.py` 生成中英双语说明，第一行直接告诉安卓玩家只下 `xenon-mobile-hub-<tag>-arm64.apk`，并逐项解释 clone APK / 桌面 JAR / 审计材料。- [x] 修复 release 版 catalog 解析崩溃（R8 把 Gson 模型优化成抽象壳）：给 `MindustryCatalogManifest` / `MindustryArtifact` / `CatalogMirror` / 两个枚举加 keep 规则 + `-keepattributes Signature`，并用 R8 产物 dex 验证类名/字段/构造函数保留（`MindustryCatalogR8RulesTest` 防回归）。
+- [x] 发布 r20（含该修复）并已手动同步镜像：镜像 catalog 与 GitHub 逐字节一致、14/14 资产 200、Hub APK SHA-256 一致。
 
