@@ -518,7 +518,7 @@
     <string name="game_styles_joystick_hide_when_mouse">在实体鼠标操作时隐藏</string>
     <string name="game_styles_joystick_hide_when_gamepad">在手柄操作时隐藏</string>
     <string name="game_styles_save_failed">保存样式失败</string>
-    <string name="game_saponsorship_finished_game">启动器已经成功运行了 %s 次游戏！如果您觉得好用的话，可以考虑赞助支持一下作者喔！qwq</string>
+    <string name="game_saponsorship_finished_game">启动器已经成功运行了 %s 次游戏！如果觉得好用，欢迎加入交流群一起交流反馈～</string>
     <string name="game_vulkan_check_title">Vulkan 检测</string>
     <string name="game_vulkan_check_text">检查您的设备是否支持使用 Vulkan 运行 Minecraft 26.2+，结果仅供参考。</string>
     <string name="game_vulkan_check_version">Vulkan 版本：%s</string>
@@ -1309,6 +1309,7 @@
     <string name="about_launcher_author_text">%s 的作者</string>
     <string name="about_launcher_project_link">项目地址</string>
     <string name="about_author_github">GitHub 主页</string>
+    <string name="about_community_group">加入交流群</string>
     <string name="about_sponsor">赞助支持</string>
     <string name="about_acknowledgements_title">鸣谢</string>
     <string name="about_acknowledgements_pojav_text">%s 使用了 PojavLauncher 的启动后端</string>

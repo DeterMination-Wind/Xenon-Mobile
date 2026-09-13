@@ -43,7 +43,7 @@ const val URL_PROJECT: String = "https://github.com/DeterMination-Wind/Xenon-Mob
 const val URL_PROJECT_INFO: String = "http://121.199.60.4/github/repos/DeterMination-Wind/Xenon-Mobile/releases/latest"
 const val URL_COMMUNITY: String = "https://github.com/DeterMination-Wind/Xenon-Mobile/graphs/contributors"
 const val URL_WEBLATE: String = "https://github.com/DeterMination-Wind/Xenon-Mobile/discussions"
-const val URL_SUPPORT: String = "https://ifdian.net/a/MovTery"
+const val URL_COMMUNITY_GROUP: String = "https://qm.qq.com/q/QjHwsXMQ48"
 const val URL_AUTHOR: String = "https://github.com/DeterMination-Wind"
 const val URL_EASYTIER: String = "https://easytier.cn/"
 

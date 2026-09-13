@@ -612,7 +612,7 @@ object AllSettings : SettingsRegistry() {
     val finishedGame = intSetting("finishedGame", 0)
 
     /**
-     * 是否在打开启动器时，根据特定的运行游戏次数，显示赞助支持弹窗
+     * 是否在打开启动器时，根据特定的运行游戏次数，显示加入交流群的弹窗
      */
     val showSponsorship = boolSetting("showSponsorship", true)
 

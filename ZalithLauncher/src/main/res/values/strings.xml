@@ -519,7 +519,7 @@
     <string name="game_styles_joystick_hide_when_mouse">Hide When Using Physical Mouse</string>
     <string name="game_styles_joystick_hide_when_gamepad">Hide When Using Gamepad</string>
     <string name="game_styles_save_failed">Failed to Save Style</string>
-    <string name="game_saponsorship_finished_game">The launcher has successfully launched the game %s times! If you find it useful, please consider supporting the developer! :)</string>
+    <string name="game_saponsorship_finished_game">The launcher has successfully launched the game %s times! If you find it useful, join our community group to share feedback.</string>
 
     <string name="game_vulkan_check_title">Vulkan Check</string>
     <string name="game_vulkan_check_text">Check whether your device supports running Minecraft 26.2+ with Vulkan. Results are for reference only.</string>
@@ -1312,6 +1312,7 @@
     <string name="about_launcher_author_text">Author of %s</string>
     <string name="about_launcher_project_link">Project Link</string>
     <string name="about_author_github">GitHub</string>
+    <string name="about_community_group">Join the community group</string>
     <string name="about_sponsor">Sponsorship Support</string>
     <string name="about_acknowledgements_title">Acknowledgements</string>
     <string name="about_acknowledgements_pojav_text">%s uses the launch backend from PojavLauncher</string>

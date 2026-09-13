@@ -398,7 +398,7 @@
     <string name="game_styles_joystick_hide_when_mouse">使用實體滑鼠時隱藏</string>
     <string name="game_styles_joystick_hide_when_gamepad">使用手把時隱藏</string>
     <string name="game_styles_save_failed">儲存樣式失敗</string>
-    <string name="game_saponsorship_finished_game">啟動器已成功執行遊戲 %s 次！如果您覺得好用，可以考慮贊助支持作者喔！qwq</string>
+    <string name="game_saponsorship_finished_game">啟動器已成功執行遊戲 %s 次！如果覺得好用，歡迎加入交流群一起交流回饋～</string>
     <string name="game_vulkan_check_title">Vulkan 檢測</string>
     <string name="game_vulkan_check_text">檢查您的裝置是否支援使用 Vulkan 執行 Minecraft 26.2+，結果僅供參考</string>
     <string name="game_vulkan_check_version">Vulkan 版本：%s</string>
@@ -958,6 +958,7 @@
     <string name="about_launcher_author_text">%s 的作者</string>
     <string name="about_launcher_project_link">專案連結</string>
     <string name="about_author_github">GitHub 主頁</string>
+    <string name="about_community_group">加入交流群</string>
     <string name="about_sponsor">贊助支持</string>
     <string name="about_acknowledgements_title">鳴謝</string>
     <string name="about_acknowledgements_pojav_text">%s 使用了 PojavLauncher 的啟動後端</string>

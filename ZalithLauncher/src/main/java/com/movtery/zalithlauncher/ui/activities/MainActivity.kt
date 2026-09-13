@@ -48,7 +48,7 @@ import com.movtery.zalithlauncher.game.plugin.driver.DriverPluginManager
 import com.movtery.zalithlauncher.game.version.installed.VersionsManager
 import com.movtery.zalithlauncher.notification.NotificationManager
 import com.movtery.zalithlauncher.path.PathManager
-import com.movtery.zalithlauncher.path.URL_SUPPORT
+import com.movtery.zalithlauncher.path.URL_COMMUNITY_GROUP
 import com.movtery.zalithlauncher.setting.AllSettings
 import com.movtery.zalithlauncher.ui.base.BaseAppCompatActivity
 import com.movtery.zalithlauncher.ui.components.SimpleAlertDialog
@@ -329,10 +329,10 @@ class MainActivity : BaseAppCompatActivity() {
                     )
                 }
 
-                //显示赞助支持的小弹窗
+                // 运行若干次后邀请加入交流群的小弹窗
                 if (!isImporting && finishedGame.state >= 100 && showSponsorship.state) {
                     SimpleAlertDialog(
-                        title = stringResource(R.string.about_sponsor),
+                        title = stringResource(R.string.about_community_group),
                         text = stringResource(R.string.game_saponsorship_finished_game, finishedGame.state),
                         dismissText = stringResource(R.string.generic_close),
                         onDismiss = {
@@ -341,7 +341,7 @@ class MainActivity : BaseAppCompatActivity() {
                         onConfirm = {
                             showSponsorship.save(false)
                             eventViewModel.sendEvent(
-                                EventViewModel.Event.OpenLink(URL_SUPPORT)
+                                EventViewModel.Event.OpenLink(URL_COMMUNITY_GROUP)
                             )
                         }
                     )
