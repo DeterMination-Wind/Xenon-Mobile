@@ -144,20 +144,24 @@ RELEASE_KEY_ALIAS (optional; defaults to movtery_zalith)
 The workflow runs for a `v*` tag (or an explicit `gh workflow run --ref <tag>`), and its first job
 refuses any other ref. It then:
 
-The clone and JAR jobs do not download Arc from JitPack: they fetch `Anuken/Arc` at the `archash`
-recorded in Mindustry's `gradle.properties` into an `Arc` directory next to the Mindustry checkout
-and let Mindustry's `localArc` composite build compile it. JitPack currently answers `401` for the
-`com.android` backend artifact, and Mindustry's own `settings.gradle` calls the local Arc checkout
-"highly recommended, as jitpack is unreliable".
-
 1. Builds the signed arm64 Hub APK.
 2. Checks out each locked game commit and builds the 11 arm64 clone APKs with the Xenon overlay.
 3. Builds the Vanilla, BE, and MindustryX JAR artifacts.
 4. Validates package metadata, version data, ABI, signer digest, size, and SHA-256.
 5. Refuses a release when an APK slot versionCode or JAR build number is not greater than the previous catalog entry.
 6. Generates `catalog/xenon-mobile-catalog.json` and validates it against the source lock.
-7. Uploads APKs, JARs, source, patch, build-script, lock, notice, and catalog assets to the GitHub Release.
-8. Commits the generated catalog to `main`.
+7. Renders the player-facing Release body with `scripts/xenon-mobile/release-notes.py`. Auto-generated
+   commit lists never told a player what to install, so the body names the single file an Android
+   player needs (`xenon-mobile-hub-<tag>-arm64.apk`) and then explains the isolated clone APKs, the
+   desktop JARs and the audit assets.
+8. Uploads APKs, JARs, source, patch, build-script, lock, notice, and catalog assets to the GitHub Release.
+9. Commits the generated catalog to `main`.
+
+The clone and JAR jobs do not download Arc from JitPack: they fetch `Anuken/Arc` at the `archash`
+recorded in Mindustry's `gradle.properties` into an `Arc` directory next to the Mindustry checkout
+and let Mindustry's `localArc` composite build compile it. JitPack currently answers `401` for the
+`com.android` backend artifact, and Mindustry's own `settings.gradle` calls the local Arc checkout
+"highly recommended, as jitpack is unreliable".
 
 Stable asset names are derived from the tag, variant, slot, and arm64 profile. Release asset names must never be reused for different bytes.
 

@@ -499,11 +499,23 @@ jobs:
             git push origin HEAD:main
           fi
 
+      - name: Render the release body
+        run: |
+          set -euo pipefail
+          # Players could not tell which asset to install from the auto-generated notes, so the
+          # body starts with the one file an Android player needs and explains every other file.
+          python3 scripts/xenon-mobile/release-notes.py \
+            --tag "$GITHUB_REF_NAME" \
+            --catalog release-assets/xenon-mobile-catalog.json \
+            --previous catalog/xenon-mobile-catalog.json \
+            --output "$RUNNER_TEMP/release-body.md"
+          head -n 3 "$RUNNER_TEMP/release-body.md"
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref_name }}
           name: Xenon Mobile ${{ github.ref_name }}
-          generate_release_notes: true
+          body_path: ${{ runner.temp }}/release-body.md
           fail_on_unmatched_files: true
           files: release-assets/*
