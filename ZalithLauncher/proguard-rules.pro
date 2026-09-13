@@ -52,3 +52,14 @@
 
 # Libraries
 -keep class com.github.steveice10.opennbt.** { *; }
+
+# Gson reflects over the Mindustry catalog: it maps JSON keys to the *field names* (the catalog
+# model has no @SerializedName) and instantiates the classes through their no-argument
+# constructors. Without these rules a release build fails on device with
+# "Abstract classes can't be instantiated! ... Class name: mq5".
+-keepattributes Signature
+-keep class com.movtery.zalithlauncher.game.mindustry.MindustryCatalogManifest { *; }
+-keep class com.movtery.zalithlauncher.game.mindustry.MindustryArtifact { *; }
+-keep class com.movtery.zalithlauncher.game.mindustry.CatalogMirror { *; }
+-keep enum com.movtery.zalithlauncher.game.mindustry.MindustryVariant { *; }
+-keep enum com.movtery.zalithlauncher.game.mindustry.MindustryBackend { *; }
