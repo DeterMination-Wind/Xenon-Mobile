@@ -153,8 +153,8 @@ tasks.register("validateGameSourceLock") {
         }
         val defaults = root["defaults"] as? Map<*, *> ?: throw GradleException("Source lock defaults are missing")
         val expected = mapOf(
-            "vanilla" to ("Anuken/Mindustry" to "254fd3e28d3adffcb69886f42fbdab1a9146df0e"),
-            "be" to ("Anuken/Mindustry" to "254fd3e28d3adffcb69886f42fbdab1a9146df0e"),
+            "vanilla" to ("Anuken/Mindustry" to "4368c6e60eece15bb15db22f66f88b42d00bef79"),
+            "be" to ("Anuken/Mindustry" to "4368c6e60eece15bb15db22f66f88b42d00bef79"),
             "mindustryx" to ("TinyLake/MindustryX" to "dc388e903e3be54b386787785ad5c15d589bea90")
         )
         expected.forEach { (variant, pin) ->
@@ -166,7 +166,7 @@ tasks.register("validateGameSourceLock") {
         val fixture = (root["fixtures"] as? Map<*, *>)?.get("serverList") as? Map<*, *>
             ?: throw GradleException("Server list fixture source lock is missing")
         if (fixture["sourceRepo"] != "Anuken/MindustryServerList" ||
-            fixture["sourceCommit"] != "10c099d68349bfde95ec60aea1b76dc7135e55bd") {
+            fixture["sourceCommit"] != "4e669f4a3a67dceaf418dcbf6c5379ccbc8877c1") {
             throw GradleException("Server list fixture source lock mismatch")
         }
     }
