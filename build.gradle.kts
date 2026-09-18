@@ -166,7 +166,7 @@ tasks.register("validateGameSourceLock") {
         val fixture = (root["fixtures"] as? Map<*, *>)?.get("serverList") as? Map<*, *>
             ?: throw GradleException("Server list fixture source lock is missing")
         if (fixture["sourceRepo"] != "Anuken/MindustryServerList" ||
-            fixture["sourceCommit"] != "fec4b6a8c66d156c280a7f44c71273f2e866455b") {
+            fixture["sourceCommit"] != "31873065947d7dd4705b99e6abb6e2b5b8aac2b6") {
             throw GradleException("Server list fixture source lock mismatch")
         }
     }
