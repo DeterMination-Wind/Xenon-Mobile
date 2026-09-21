@@ -3,12 +3,12 @@
   "defaults": {
     "vanilla": {
       "sourceRepo": "Anuken/Mindustry",
-      "sourceCommit": "4368c6e60eece15bb15db22f66f88b42d00bef79",
+      "sourceCommit": "067c720a8817c1c9fb586c03898a7d948caaed56",
       "patchSeries": []
     },
     "be": {
       "sourceRepo": "Anuken/Mindustry",
-      "sourceCommit": "4368c6e60eece15bb15db22f66f88b42d00bef79",
+      "sourceCommit": "067c720a8817c1c9fb586c03898a7d948caaed56",
       "patchSeries": []
     },
     "mindustryx": {
@@ -21,7 +21,7 @@
   "fixtures": {
     "serverList": {
       "sourceRepo": "Anuken/MindustryServerList",
-      "sourceCommit": "e2a3f8a9fdc6855cecfa73f64aa7ece53af8b7f0",
+      "sourceCommit": "5786bf6e3478ad916f9182fd5ee1f175259ac32e",
       "patchSeries": []
     }
   }
