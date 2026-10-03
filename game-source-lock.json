@@ -21,7 +21,7 @@
   "fixtures": {
     "serverList": {
       "sourceRepo": "Anuken/MindustryServerList",
-      "sourceCommit": "94351b1e65c3ece5d0fb6b87ab028d1d5bf33518",
+      "sourceCommit": "73d8d075f58ff5483313b5f49a39c7074fd063a0",
       "patchSeries": []
     }
   }
