@@ -3,17 +3,17 @@
   "defaults": {
     "vanilla": {
       "sourceRepo": "Anuken/Mindustry",
-      "sourceCommit": "067c720a8817c1c9fb586c03898a7d948caaed56",
+      "sourceCommit": "28e498f4c0b63b1eae217d8914946b03d162c1f4",
       "patchSeries": []
     },
     "be": {
       "sourceRepo": "Anuken/Mindustry",
-      "sourceCommit": "067c720a8817c1c9fb586c03898a7d948caaed56",
+      "sourceCommit": "28e498f4c0b63b1eae217d8914946b03d162c1f4",
       "patchSeries": []
     },
     "mindustryx": {
       "sourceRepo": "TinyLake/MindustryX",
-      "sourceCommit": "dc388e903e3be54b386787785ad5c15d589bea90",
+      "sourceCommit": "ccca71bb4b4bc8e2abc770ca19146e4afe1129b0",
       "patchSeries": []
     }
   },

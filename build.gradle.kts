@@ -153,9 +153,9 @@ tasks.register("validateGameSourceLock") {
         }
         val defaults = root["defaults"] as? Map<*, *> ?: throw GradleException("Source lock defaults are missing")
         val expected = mapOf(
-            "vanilla" to ("Anuken/Mindustry" to "067c720a8817c1c9fb586c03898a7d948caaed56"),
-            "be" to ("Anuken/Mindustry" to "067c720a8817c1c9fb586c03898a7d948caaed56"),
-            "mindustryx" to ("TinyLake/MindustryX" to "dc388e903e3be54b386787785ad5c15d589bea90")
+            "vanilla" to ("Anuken/Mindustry" to "28e498f4c0b63b1eae217d8914946b03d162c1f4"),
+            "be" to ("Anuken/Mindustry" to "28e498f4c0b63b1eae217d8914946b03d162c1f4"),
+            "mindustryx" to ("TinyLake/MindustryX" to "ccca71bb4b4bc8e2abc770ca19146e4afe1129b0")
         )
         expected.forEach { (variant, pin) ->
             val entry = defaults[variant] as? Map<*, *> ?: throw GradleException("Missing source lock for $variant")
