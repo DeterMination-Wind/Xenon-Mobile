@@ -3,12 +3,12 @@
   "defaults": {
     "vanilla": {
       "sourceRepo": "Anuken/Mindustry",
-      "sourceCommit": "28e498f4c0b63b1eae217d8914946b03d162c1f4",
+      "sourceCommit": "17012d61d9e4c3cbd9820d87e81c24495486ac53",
       "patchSeries": []
     },
     "be": {
       "sourceRepo": "Anuken/Mindustry",
-      "sourceCommit": "28e498f4c0b63b1eae217d8914946b03d162c1f4",
+      "sourceCommit": "17012d61d9e4c3cbd9820d87e81c24495486ac53",
       "patchSeries": []
     },
     "mindustryx": {
